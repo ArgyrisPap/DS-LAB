@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>gr.hua.dit</groupId>
-	<artifactId>office-hours</artifactId>
+	<artifactId>streetfood</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Office Hours</name>
-	<description>DS Lab 2025-26</description>
+	<name>Street Food Go</name>
+	<description>Street Food Ap</description>
 	<properties>
 		<java.version>21</java.version>
 	</properties>
