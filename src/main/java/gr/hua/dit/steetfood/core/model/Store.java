@@ -67,23 +67,23 @@ public class Store {
         return id;
     }
 
-    public void setStore_id(Long id) {
+    public void setStoreId(Long id) {
         this.id = id;
     }
 
-    public String getStore_name() {
+    public String getStoreName() {
         return storeName;
     }
 
-    public void setStore_name(String storeName) {
+    public void setStoreName(String storeName) {
         this.storeName = storeName;
     }
 
-    public String getStore_address() {
+    public String getStoreAddress() {
         return storeAddress;
     }
 
-    public void setStore_address(String store_address) {
+    public void setStoreAddress(String store_address) {
         this.storeAddress = store_address;
     }
 

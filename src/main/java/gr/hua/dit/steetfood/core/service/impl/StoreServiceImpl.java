@@ -10,6 +10,9 @@ import gr.hua.dit.steetfood.core.repository.MenuRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
 import gr.hua.dit.steetfood.core.service.InitializationService;
 import gr.hua.dit.steetfood.core.service.StoreService;
+import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
+import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
+import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
@@ -40,15 +43,39 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public void addFoodItem(FoodItem foodItem) {
-        this.foodItemRepository.save(foodItem);
-    }
+    public CreateStoreResult createStore(CreateStoreRequest createStoreRequest) {
+        if (createStoreRequest ==null) throw new NullPointerException();
+        //TODO NA SYNEXISV NA KANV TOUS ELEGXOUS
+        final String storeAddress = createStoreRequest.storeAddress();
+        final String storeName = createStoreRequest.storeName().strip();
+        final String storePhoneNumber = createStoreRequest.phoneNumber().strip();
+        final StoreType storeType = createStoreRequest.storeType();
 
-    @Override
-    public boolean updatePrice(double price, FoodItem foodItem) {
 
+        /*final PhoneNumberValidationResult phoneNumberValidationResult
+            = this.phoneNumberPort.validate(mobilePhoneNumber);
+        if (!phoneNumberValidationResult.isValidMobile()) {
+            return CreatePersonResult.fail("Mobile Phone Number is not valid");
+        }
+        mobilePhoneNumber = phoneNumberValidationResult.e164();*/
+         if (this.storeRepository.existsByStoreAddress(storeAddress)) {
+             return CreateStoreResult.fail("Store with address:"+storeAddress+" already exists");
+         }
+         if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
+             return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
+         }
 
-        return false;
+         Store store= new Store();
+         store.setStoreId(null);
+         store.setStoreAddress(storeAddress);
+         store.setStoreName(storeName);
+         store.setPhoneNumber(storePhoneNumber);
+         store.setStoreType(storeType);
+         store.setOpen(false); //ALWAYS FALSE AT START
+
+        store= this.storeRepository.save(store);
+
+        return CreateStoreResult.success(createStoreRequest);
     }
 
     @PostConstruct
@@ -63,15 +90,15 @@ public class StoreServiceImpl implements StoreService {
 
         // 1. Store
         Store store1 = new Store();
-        store1.setStore_address("akti karaiskaki 40");
-        store1.setStore_name("Porto Leone");
+        store1.setStoreAddress("akti karaiskaki 40");
+        store1.setStoreName("Porto Leone");
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
         Store savedStore = storeRepository.save(store1);
 
         Store store2 = new Store();
-        store2.setStore_address("epidauroy 26");
-        store2.setStore_name("La scala");
+        store2.setStoreAddress("epidauroy 26");
+        store2.setStoreName("La scala");
         store2.setPhoneNumber("2104648840");
         store2.setStoreType(StoreType.GYROS);
         Store savedStore2 = storeRepository.save(store2);

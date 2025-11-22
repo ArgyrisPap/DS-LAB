@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Add Store</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1>Street Food GO <small>/ Add Store Form</small></h1>
+</header>
+
+<section layout:fragment="main">
+
+    <!-- REGISTRATION FORM -->
+    <form th:action="@{/addstore}" method="post" th:object="${createStoreRequest}">
+
+        <!-- ERROR MESSAGE -->
+        <div class="text-center mb-3" th:if="${errorMessage != null}">
+            <p class="text-danger m-0 p-0" th:text="${errorMessage}"></p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">I am:</label>
+            <select name="type" th:field="*{storeType}" class="form-select">
+                <option value="PIZZA">Pizzeria</option>
+                <option value="BURGER">Burgeradiko</option>
+                <option value="GYROS">Gyros-Psitopolio</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Store Name</label>
+            <input type="text" name="huaId" th:field="*{storeName}" class="form-control"  required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Store Address</label>
+            <input type="text" name="firstName" th:field="*{storeAddress}" class="form-control" placeholder="Example: Omirou 36" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Phone Number</label>
+            <input type="tel" name="lastName" th:field="*{phoneNumber}" class="form-control" required />
+        </div>
+
+
+        <div class="mb-4">
+            <button type="submit" class="btn btn-primary">Click To Add Store</button>
+        </div>
+
+        <!-- USEFUL LINKS -->
+        <p class="m-0 p-0">
+            <a th:href="@{/login}">Already have an account? Log in</a>
+        </p>
+
+    </form>
+
+</section>
+
+</body>
+</html>
