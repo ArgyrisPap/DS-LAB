@@ -11,4 +11,8 @@ import java.util.Optional;
 public interface MenuRepository extends JpaRepository<Menu,Long> {
 
     Optional<Menu> findById(int id);
+
+    Optional<Menu> findByStoreId(Long storeId);
+
+    boolean existsByStoreId(Long storeId);
 }

@@ -62,8 +62,11 @@ public class Store {
         this.phoneNumber = phoneNumber;
         this.open = open;
     }
+    public Long getId() { //FOR THYMELEAF!!!
+        return id;
+    }
 
-    public Long getStore_id() {
+    public Long getStoreId() {
         return id;
     }
 

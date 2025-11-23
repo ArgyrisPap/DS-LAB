@@ -38,7 +38,7 @@ public class Menu {
     @JoinColumn (name= "menu_store_id", nullable = false)
     private Store store;
 
-    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<FoodItem> foodItems;
 
     public Menu(int id, Store store, List<FoodItem> foodItems) {

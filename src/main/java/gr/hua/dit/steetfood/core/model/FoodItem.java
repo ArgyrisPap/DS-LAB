@@ -10,6 +10,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
@@ -20,8 +21,7 @@ import jakarta.validation.constraints.Null;
 @Table(
     name = "food_item",
     uniqueConstraints = {
-        @UniqueConstraint(name= "uk_food_item_id", columnNames = "food_item_id"),
-        @UniqueConstraint(name = "uk_food_item_description",columnNames = "food_item_description")
+        @UniqueConstraint(name= "uk_food_item_id", columnNames = "food_item_id")
     },
     indexes = {
         @Index(name ="idx_food_item_description", columnList = "food_item_description")
@@ -66,6 +66,14 @@ public class FoodItem {
 
     public String getDescription() {
         return description;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public void setDescription(String description) {

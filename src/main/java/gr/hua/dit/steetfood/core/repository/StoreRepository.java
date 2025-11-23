@@ -16,11 +16,16 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     Optional<Store> findByStoreName(String name);
 
+    //Optional<Store> findByStoreId(Long id);
+
     Optional <Store> findByStoreAddress(String address);
 
     boolean existsByStoreAddress(String address);
 
     boolean existsByPhoneNumber(String phoneNumber);
+
+    //List <Store> getAllStores ();
+
 
     //List<Store> findAllByOpen();
     //NA DW POIO DOYLEYEI

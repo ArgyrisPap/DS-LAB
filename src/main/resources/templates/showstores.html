@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Available Stores</title>
+    <style>
+        .store-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .store-card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            width: 250px;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+
+        .store-card a {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .store-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .store-field {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Available Stores</h1>
+<div class="filter-section">
+    <form method="post" th:action="@{/showstores}">
+        <label for="storeType">Filter by Type:</label>
+
+        <select id="storeType" name="stores" required>
+            <option value="">-- Select a type --</option>
+            <option value="GYROS">Gyros</option>
+            <option value="BURGER">Burger</option>
+            <option value="PIZZA">Pizza</option>
+        </select>
+
+        <button type="submit">Filter</button>
+        <a href="/showstores" style="padding: 8px 20px; background-color: #6c757d; color: white; border-radius: 4px; text-decoration: none;">Clear Filter</a>
+    </form>
+</div>
+
+
+<div class="store-container">
+    <div th:each="store : ${stores}" class="store-card">
+
+        <a th:href="@{'/store/' + ${store.id} + '/menu'}">
+
+
+            <div class="store-title" th:text="${store.storeName}"></div>
+
+            <div class="store-field">
+                <strong>Address:</strong>
+                <span th:text="${store.storeAddress}"></span>
+            </div>
+
+            <div class="store-field">
+                <strong>Type:</strong>
+                <span th:text="${store.storeType}"></span>
+            </div>
+
+            <div class="store-field">
+                <strong>Phone:</strong>
+                <span th:text="${store.phoneNumber}"></span>
+            </div>
+
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

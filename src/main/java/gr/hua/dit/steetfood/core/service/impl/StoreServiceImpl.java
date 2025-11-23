@@ -43,15 +43,58 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    public CreateStoreResult deleteStore(Long id) {
+        //TODO ONLY FOR ADMIN OF SITE
+        if (!storeRepository.existsById(id)) {
+            return CreateStoreResult.fail("Store not found");
+        }
+        Store store =  storeRepository.findById(id).orElse(null);
+        String storeName= store.getStoreName();
+        String storeAddress= store.getStoreAddress();
+        String phoneNumber= store.getPhoneNumber();
+        StoreType storeType= store.getStoreType();
+        CreateStoreRequest createStoreRequest = new CreateStoreRequest(storeName,storeAddress,storeType,phoneNumber);
+
+        //TODO : PREPEI PRWTA NA KANV DELETE TOUS ALLOUS PINAKES
+        this.storeRepository.deleteById(id);
+
+        return CreateStoreResult.success(createStoreRequest);
+    }
+    @Override
+    public List<Store> getAllStores() {
+        return storeRepository.findAll();
+
+    }
+
+    @Override
+    public List<Store> findStoresByType(StoreType type) {
+        if (type == null) throw new NullPointerException();
+        List <Store> allStores= this.storeRepository.findAll();
+
+        List<Store> storeList = new ArrayList<>();
+        for (Store store : allStores) {
+            if (store.getStoreType().equals(type)) storeList.add(store);
+        }
+        if (storeList.isEmpty()) throw new NullPointerException("Could not find any stores with that type");
+        return storeList;
+    }
+
+    @Override
+    public Store getStoreById(Long id) {
+        if (!storeRepository.existsById(id)) throw new NullPointerException("Store not found");
+        return storeRepository.findById(id).orElse(null);
+    }
+
+    @Override
     public CreateStoreResult createStore(CreateStoreRequest createStoreRequest) {
         if (createStoreRequest ==null) throw new NullPointerException();
-        //TODO NA SYNEXISV NA KANV TOUS ELEGXOUS
+
         final String storeAddress = createStoreRequest.storeAddress();
         final String storeName = createStoreRequest.storeName().strip();
         final String storePhoneNumber = createStoreRequest.phoneNumber().strip();
         final StoreType storeType = createStoreRequest.storeType();
-
-
+    //TODO ONLY FOR ADMIN OF SITE
+    //TODO NA SYNEXISV NA KANV TOUS ELEGXOUS GIA TO THLEFWNO
         /*final PhoneNumberValidationResult phoneNumberValidationResult
             = this.phoneNumberPort.validate(mobilePhoneNumber);
         if (!phoneNumberValidationResult.isValidMobile()) {
@@ -88,7 +131,7 @@ public class StoreServiceImpl implements StoreService {
         LOGGER.info("Starting database initialization with initial data...");
 
 
-        // 1. Store
+        // 1. Store 1
         Store store1 = new Store();
         store1.setStoreAddress("akti karaiskaki 40");
         store1.setStoreName("Porto Leone");
@@ -96,6 +139,41 @@ public class StoreServiceImpl implements StoreService {
         store1.setStoreType(StoreType.GYROS);
         Store savedStore = storeRepository.save(store1);
 
+        List<FoodItem> foodItemsList1 = new ArrayList<>();
+        Menu menu1 = new Menu();
+        menu1.setStore(savedStore);
+        menu1.setFoodItems(foodItemsList1);
+        Menu savedMenu1 = menuRepository.save(menu1);
+
+
+        FoodItem food1 = new FoodItem();
+        food1.setDescription("french fries");
+        food1.setPrice(3);
+        food1.setCategory(FoodCategory.STARTER);
+        food1.setMenu(savedMenu1);
+        foodItemsList1.add(food1);
+        FoodItem savedFood1= foodItemRepository.save(food1);
+
+        FoodItem food2 = new FoodItem();
+        food2.setDescription("burger");
+        food2.setPrice(4);
+        food2.setCategory(FoodCategory.MEAT);
+        food2.setMenu(savedMenu1);
+        foodItemsList1.add(food2);
+        FoodItem savedFood2= foodItemRepository.save(food2);
+
+        FoodItem food3 = new FoodItem();
+        food3.setDescription("ceasers");
+        food3.setPrice(7);
+        food3.setCategory(FoodCategory.SALAD);
+        food3.setMenu(savedMenu1);
+        foodItemsList1.add(food3);
+        FoodItem savedFood3= foodItemRepository.save(food3);
+
+        menuRepository.save (savedMenu1);
+
+
+        //STORE 2========================
         Store store2 = new Store();
         store2.setStoreAddress("epidauroy 26");
         store2.setStoreName("La scala");
@@ -103,41 +181,80 @@ public class StoreServiceImpl implements StoreService {
         store2.setStoreType(StoreType.GYROS);
         Store savedStore2 = storeRepository.save(store2);
 
-        // 2. Menu
-        List<FoodItem> foodItems = new ArrayList<>();
-        Menu menu1 = new Menu();
-        menu1.setStore(savedStore);
-        menu1.setFoodItems(foodItems);
-        Menu savedMenu = menuRepository.save(menu1);
+        List<FoodItem> foodItemsList2 = new ArrayList<>();
+        Menu menu2 = new Menu();
+        menu2.setStore(savedStore2);
+        menu2.setFoodItems(foodItemsList2);
+        Menu savedMenu2 = menuRepository.save(menu2);
 
-        // 3. FoodItems
-        FoodItem foodItem1 = new FoodItem();
-        foodItem1.setDescription("french fries");
-        foodItem1.setPrice(3);
-        foodItem1.setCategory(FoodCategory.STARTER);
-        foodItem1.setMenu(savedMenu);
-        FoodItem savedFoodItem = foodItemRepository.save(foodItem1);
+        FoodItem food4 = new FoodItem();
+        food4.setDescription("ceasers");
+        food4.setPrice(7);
+        food4.setCategory(FoodCategory.SALAD);
+        food4.setMenu(savedMenu2);
+        foodItemsList2.add(food4);
+        FoodItem savedFood4= foodItemRepository.save(food4);
 
-        FoodItem foodItem2 = new FoodItem();
-        foodItem2.setDescription("burger");
-        foodItem2.setPrice(4);
-        foodItem2.setCategory(FoodCategory.MEAT);
-        foodItem2.setMenu(savedMenu);
-        foodItems.add(foodItem2);
-        savedFoodItem= foodItemRepository.save(foodItem2);
+        menuRepository.save (savedMenu2);
 
-        FoodItem foodItem3 = new FoodItem();
-        foodItem3.setDescription("ceasers");
-        foodItem3.setPrice(7);
-        foodItem3.setCategory(FoodCategory.SALAD);
-        foodItem3.setMenu(savedMenu);
-        foodItems.add(foodItem3);
-        savedFoodItem= foodItemRepository.save(foodItem3);
+        //STORE 3========================
+        Store store3 = new Store();
+        store3.setStoreAddress("example 3 address");
+        store3.setStoreName("Burget Town");
+        store3.setPhoneNumber("2104600003");
+        store3.setStoreType(StoreType.BURGER);
+        Store savedStore3 = storeRepository.save(store3);
+
+        List<FoodItem> foodItemsList3 = new ArrayList<>();
+        Menu menu3 = new Menu();
+        menu3.setStore(savedStore3);
+        menu3.setFoodItems(foodItemsList3);
+        Menu savedMenu3 = menuRepository.save(menu3);
+
+        FoodItem food5 = new FoodItem();
+        food5.setDescription("Classic Burger");
+        food5.setPrice(9.5);
+        food5.setCategory(FoodCategory.MEAT);
+        food5.setMenu(savedMenu3);
+        foodItemsList3.add(food5);
+        FoodItem savedFood5= foodItemRepository.save(food5);
+
+        menuRepository.save (savedMenu3);
 
 
-        // 4. Update Menu
-        savedMenu.getFoodItems().add(savedFoodItem);
-        menuRepository.save(savedMenu);
+        //STORE 4========================
+        Store store4 = new Store();
+        store4.setStoreAddress("example 4 address");
+        store4.setStoreName("Pizza Trattoria");
+        store4.setPhoneNumber("2104600004");
+        store4.setStoreType(StoreType.PIZZA);
+        Store savedStore4 = storeRepository.save(store4);
+
+        List<FoodItem> foodItemsList4 = new ArrayList<>();
+        Menu menu4 = new Menu();
+        menu4.setStore(savedStore4);
+        menu4.setFoodItems(foodItemsList4);
+        Menu savedMenu4 = menuRepository.save(menu4);
+
+        FoodItem food6 = new FoodItem();
+        food6.setDescription("Fish and chips");
+        food6.setPrice(12.5);
+        food6.setCategory(FoodCategory.FISH);
+        food6.setMenu(savedMenu4);
+        foodItemsList4.add(food6);
+        FoodItem savedFood6= foodItemRepository.save(food6);
+
+        menuRepository.save (savedMenu4);
+
+
+
+
+
+
+
+
+
+
 
 
 
