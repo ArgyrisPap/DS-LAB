@@ -68,7 +68,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public List<Store> findStoresByType(StoreType type) {
-        if (type == null) throw new NullPointerException();
+        /*if (type == null) throw new NullPointerException();
         List <Store> allStores= this.storeRepository.findAll();
 
         List<Store> storeList = new ArrayList<>();
@@ -76,7 +76,9 @@ public class StoreServiceImpl implements StoreService {
             if (store.getStoreType().equals(type)) storeList.add(store);
         }
         if (storeList.isEmpty()) throw new NullPointerException("Could not find any stores with that type");
-        return storeList;
+        return storeList;*/
+        if (type == null) return new ArrayList<>();
+        return this.storeRepository.findStoresByStoreType(type);
     }
 
     @Override
@@ -137,6 +139,7 @@ public class StoreServiceImpl implements StoreService {
         store1.setStoreName("Porto Leone");
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
+        store1.setOpen(true);
         Store savedStore = storeRepository.save(store1);
 
         List<FoodItem> foodItemsList1 = new ArrayList<>();
@@ -227,7 +230,7 @@ public class StoreServiceImpl implements StoreService {
         store4.setStoreAddress("example 4 address");
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
-        store4.setStoreType(StoreType.PIZZA);
+        store4.setStoreType(StoreType.BURGER);
         Store savedStore4 = storeRepository.save(store4);
 
         List<FoodItem> foodItemsList4 = new ArrayList<>();

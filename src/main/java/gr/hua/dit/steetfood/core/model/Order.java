@@ -21,7 +21,7 @@ import java.util.List;
 
 @Entity
 @Table(
-    name="orders",
+    name="order_table",
     indexes = {
         @Index(name = "idx_order_person_id", columnList = "person_id"),
         @Index(name = "idx_order_store_id", columnList = "store_id")
@@ -39,7 +39,7 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn (name = "store_id")
     private Store store;
-    @OneToMany(mappedBy = "orders", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @Column(name = "order_creation_date")
@@ -52,6 +52,46 @@ public class Order {
         this.person = person;
         this.store = store;
         this.orderItems = orderItems;
+        this.creationDate = creationDate;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Person getPerson() {
+        return person;
+    }
+
+    public void setPerson(Person person) {
+        this.person = person;
+    }
+
+    public Store getStore() {
+        return store;
+    }
+
+    public void setStore(Store store) {
+        this.store = store;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    public Instant getCreationDate() {
+        return creationDate;
+    }
+
+    public void setCreationDate(Instant creationDate) {
         this.creationDate = creationDate;
     }
 }

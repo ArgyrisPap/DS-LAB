@@ -16,6 +16,8 @@ import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.Null;
 
+import java.util.Objects;
+
 
 @Entity
 @Table(
@@ -103,5 +105,18 @@ public class FoodItem {
     @Override
     public String toString() {
         return "Food Item{name="+description+",price="+price+",category="+category+"}";
+    }
+    //FOR .CONTAINS IN {@link OrderServiceImpl}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof FoodItem)) return false;
+        FoodItem other = (FoodItem) o;
+        return Objects.equals(this.id, other.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

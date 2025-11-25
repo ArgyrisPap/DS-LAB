@@ -27,6 +27,7 @@ public class showStoreController {
 
     @GetMapping("/showstores")
     public String showStore(Model model){
+        //TODO DEN JERV EAN XREIAZETAI NA FTIAJW KATI TYPOY CREATESTOREREQUEST KAI RESULT
         List<Store> stores = this.storeService.getAllStores();
         //initial data for the form
         model.addAttribute("stores",stores);

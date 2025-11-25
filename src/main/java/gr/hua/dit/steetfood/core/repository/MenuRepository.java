@@ -1,5 +1,6 @@
 package gr.hua.dit.steetfood.core.repository;
 
+import gr.hua.dit.steetfood.core.model.FoodItem;
 import gr.hua.dit.steetfood.core.model.Menu;
 
 import org.springframework.data.jpa.repository.JpaRepository;

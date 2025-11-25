@@ -50,7 +50,7 @@ public class Store {
     private String phoneNumber; //E164
 
     @Column(name = "store_open")
-    private boolean open;
+    private boolean open = false; //TODO NA TO KANW KATEYUEIAN FALSE
 
     public Store(){}
 

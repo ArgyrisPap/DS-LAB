@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Order</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        input[type="number"] {
+            width: 80px;
+            padding: 6px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        }
+
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .back-link {
+            display: inline-block;
+            padding: 12px 24px;
+            color: #007bff;
+            text-decoration: none;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .store-info {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+
+        .store-info h2 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+
+        .price {
+            font-weight: bold;
+            color: #28a745;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Store Info -->
+<div class="store-info">
+    <h2 th:text="${store.storeName}">Store Name</h2>
+    <p th:if="${store.storeAddress}" th:text="'Address: ' + ${store.storeAddress}">Address</p>
+</div>
+
+<h1>Create Your Order</h1>
+
+<!-- Messages -->
+<div th:if="${errorMessage}" class="message error" th:text="${errorMessage}"></div>
+<div th:if="${successMessage}" class="message success" th:text="${successMessage}"></div>
+<div th:if="${warningMessage}" class="message warning" th:text="${warningMessage}"></div>
+
+<!-- Order Form -->
+<form th:action="@{'/store/' + ${store.id} + '/createorder'}"
+      method="post"
+      th:object="${orderFormRequest}">
+
+    <!-- Hidden fields for personId and storeId -->
+    <input type="hidden" th:field="*{personId}" />
+    <input type="hidden" th:field="*{storeId}" />
+
+    <table>
+        <thead>
+        <tr>
+            <th>Item</th>
+            <th>Description</th>
+            <th>Price</th>
+            <th>Quantity</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Each menu item as a row -->
+        <tr th:each="item, iterStat : ${menuItems}">
+            <td th:text="${item.description != null ? item.description : 'Item ' + (iterStat.index + 1)}">Item Name</td>
+            <td th:text="${item.description}">Description</td>
+            <td class="price" th:text="'€' + ${#numbers.formatDecimal(item.price, 1, 2)}">€0.00</td>
+            <td>
+                <!-- Hidden field for foodItemId (creates array) -->
+                <input type="hidden"
+                       name="foodItemIds"
+                       th:value="${item.id}" />
+
+                <!-- Quantity input (creates array in same order) -->
+                <input type="number"
+                       name="quantities"
+                       min="0"
+                       max="99"
+                       value="0"
+                       th:attr="data-item-id=${item.id}, aria-label='Quantity for ' + ${item.description}" />
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div class="button-group">
+        <button type="submit">Submit Order</button>
+        <a href="/showstores" class="back-link">Back to Stores</a>
+    </div>
+</form>
+
+</body>
+</html>

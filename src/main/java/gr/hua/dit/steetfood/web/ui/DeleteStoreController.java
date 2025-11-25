@@ -1,17 +1,9 @@
 package gr.hua.dit.steetfood.web.ui;
 
-import gr.hua.dit.steetfood.core.model.PersonType;
-import gr.hua.dit.steetfood.core.model.StoreType;
-import gr.hua.dit.steetfood.core.service.PersonService;
 import gr.hua.dit.steetfood.core.service.StoreService;
-import gr.hua.dit.steetfood.core.service.model.CreatePersonRequest;
-import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
-
-import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;

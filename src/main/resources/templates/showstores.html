@@ -59,7 +59,7 @@
 <div class="store-container">
     <div th:each="store : ${stores}" class="store-card">
 
-        <a th:href="@{'/store/' + ${store.id} + '/menu'}">
+        <a th:href="@{'/store/' + ${store.id} + '/createorder'}">
 
 
             <div class="store-title" th:text="${store.storeName}"></div>

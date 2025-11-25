@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.ArrayList;
 import java.util.List;
-
+// Do not use at the moment. Also not using storemenu.html
+//because linked showstores --> createorder
 @Controller
 public class StoreMenuController {
 
@@ -20,6 +21,8 @@ public class StoreMenuController {
     private final MenuService menuService;
 
     public StoreMenuController(StoreService storeService, MenuService menuService) {
+        if (storeService == null) throw new NullPointerException();
+        if (menuService == null) throw new NullPointerException();
         this.storeService = storeService;
         this.menuService = menuService;
     }
@@ -29,7 +32,7 @@ public class StoreMenuController {
         Store store = storeService.getStoreById(id);
         if (store == null) {
             model.addAttribute("errorMessage", "Store not found");
-            return "login";
+            return "redirect:/login";
         }
 
         model.addAttribute("store", store);
