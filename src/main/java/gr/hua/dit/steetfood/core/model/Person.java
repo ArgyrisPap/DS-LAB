@@ -1,5 +1,6 @@
 package gr.hua.dit.steetfood.core.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,13 +9,22 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import jakarta.persistence.UniqueConstraint;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
+
+import javax.xml.stream.Location;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Person entity.
@@ -65,6 +75,10 @@ public class Person {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<PersonLocation> locations = new ArrayList<>();
+
+
     public Person() {
     }
 
@@ -86,6 +100,7 @@ public class Person {
         this.type = type;
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
+        this.locations = new ArrayList<>();
     }
 
     public Long getId() {
@@ -160,12 +175,16 @@ public class Person {
         this.createdAt = createdAt;
     }
 
+    public List<PersonLocation> getLocations() {return locations;    }
+
+    public void setLocations(List<PersonLocation> locations) {this.locations = locations;}
+
     @Override
     public String toString() {
         return "Person{" +
             "id=" + id +
             ", huaId='" + huaId + '\'' +
-            ", type=" + type +
+            ", type=" + type + "locations=" + locations +
             '}';
     }
 }

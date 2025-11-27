@@ -1,6 +1,7 @@
 package gr.hua.dit.steetfood.core.service.impl;
 
 import gr.hua.dit.steetfood.core.model.Person;
+import gr.hua.dit.steetfood.core.model.PersonLocation;
 import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.port.LookupPort;
 import gr.hua.dit.steetfood.core.port.PhoneNumberPort;
@@ -13,10 +14,14 @@ import gr.hua.dit.steetfood.core.service.model.CreatePersonRequest;
 import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
 import gr.hua.dit.steetfood.core.service.model.PersonView;
 
+import jakarta.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
 
 /**
  * Default implementation of {@link PersonService}.
@@ -153,5 +158,16 @@ public class PersonServiceImpl implements PersonService {
         // --------------------------------------------------
 
         return CreatePersonResult.success(personView);
+    }
+    @Transactional
+    public void addLocationToPerson(String huaId, PersonLocation location) {
+        Person person = personRepository.findByHuaId(huaId).orElseThrow();
+        if (person.getLocations() == null) {
+            person.setLocations(new ArrayList<>());
+        }
+        person.getLocations().add(location);
+        System.out.println ("========after=======");
+        System.out.println(person.toString());
+        personRepository.save(person);
     }
 }

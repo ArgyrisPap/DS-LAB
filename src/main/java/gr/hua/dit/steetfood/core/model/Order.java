@@ -8,12 +8,10 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +21,8 @@ import java.util.List;
 @Table(
     name="order_table",
     indexes = {
-        @Index(name = "idx_order_person_id", columnList = "person_id"),
-        @Index(name = "idx_order_store_id", columnList = "store_id")
+        //@Index(name = "idx_order_person_id", columnList = "person_id"),
+        //@Index(name = "idx_order_store_id", columnList = "store_id")
     }
 )
 public class Order {
@@ -36,9 +34,11 @@ public class Order {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "person_id", nullable = false)
     private Person person;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn (name = "store_id")
     private Store store;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 

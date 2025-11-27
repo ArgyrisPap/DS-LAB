@@ -16,6 +16,7 @@ import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -42,12 +43,15 @@ public class OrderController {
     }
 
     @GetMapping("/store/{id}/createorder")
-    public String showCreateOrderPage(@PathVariable Long id, Model model) {
+    public String showCreateOrderPage(@PathVariable Long id, Model model
+    , final Authentication authentication) {
         LOGGER.info("Opening create order page");
+        if (AuthUtils.isAnonymous(authentication)) {return "redirect:/store/{id}/menu";}
+
 
         Long storeId = id;
         LOGGER.info("store id is {}", storeId);
-        Long personId = 1L;
+        Long personId = 1L; //TODO NA TO PAIRNV AUTOMATA
         //TODO na mpei logikh: dinw storeId, personId sta service kai mou epistrefoun auta poy uelv
         //TODO AUTHENTICATION
         try {
@@ -82,7 +86,10 @@ public class OrderController {
     @PostMapping("/store/{id}/createorder")
     public String handleCreateOrder(@PathVariable final Long id,
         @ModelAttribute("orderFormRequest") final CreateOrderFormRequest orderFormRequest,
-        final Model model) {
+        final Model model, final Authentication authentication) {
+        //LOGGER.info("=== CHECKING IF USER IS AUTHENTICATED AND CAN PLACE ORDER===");
+        if (AuthUtils.isAnonymous(authentication)) {return "redirect:http://localhost:8080/store/"+id+"/menu";}
+
 
         LOGGER.info("=== CREATE ORDER REQUEST ===");
         LOGGER.info("personId: {}", orderFormRequest.getPersonId());
