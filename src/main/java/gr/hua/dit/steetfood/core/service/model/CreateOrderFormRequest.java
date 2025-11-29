@@ -39,6 +39,8 @@ public class CreateOrderFormRequest {
                 int qty = quantities.get(i);
                 if (qty > 0) {
                     items.add(new OrderItemRequest(foodItemIds.get(i), qty));
+                    System.out.println(foodItemIds.get(i));
+                    System.out.println("posotita= "+quantities.get(i));
                 }
             }
         }

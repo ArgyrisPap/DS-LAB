@@ -7,6 +7,7 @@ import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StoreService {
 
@@ -18,7 +19,9 @@ public interface StoreService {
 
     List <Store> findStoresByType(StoreType type);
 
-    Store getStoreById(Long id);
+    Optional<Store> getStoreById(Long id);
+
+    List <FoodItem> getFoodItemListByStoreId(Long storeId);
 
 
 }

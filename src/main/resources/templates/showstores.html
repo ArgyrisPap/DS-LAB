@@ -16,6 +16,8 @@
             width: 250px;
             border-radius: 8px;
             background-color: #fafafa;
+            transition: 0.2s;
+            position: relative;
         }
 
         .store-card a {
@@ -33,12 +35,44 @@
         .store-field {
             margin-bottom: 4px;
         }
+
+        /* CLOSED STORE STYLE */
+        .store-closed {
+            background-color: #e0e0e0 !important;
+            color: #888;
+            opacity: 0.7;
+            border-color: #aaa;
+            cursor: not-allowed;
+        }
+
+        /* TOOLTIP */
+        .store-closed::after {
+            content: "Closed";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.75);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: 0.2s;
+        }
+
+        .store-closed:hover::after {
+            opacity: 1;
+        }
     </style>
 </head>
 
 <body>
 
 <h1>Available Stores</h1>
+
 <div class="filter-section">
     <form method="post" th:action="@{/showstores}">
         <label for="storeType">Filter by Type:</label>
@@ -51,16 +85,20 @@
         </select>
 
         <button type="submit">Filter</button>
-        <a href="/showstores" style="padding: 8px 20px; background-color: #6c757d; color: white; border-radius: 4px; text-decoration: none;">Clear Filter</a>
+        <a href="/showstores"
+           style="padding: 8px 20px; background-color: #6c757d; color: white; border-radius: 4px; text-decoration: none;">
+            Clear Filter
+        </a>
     </form>
 </div>
 
-
 <div class="store-container">
-    <div th:each="store : ${stores}" class="store-card">
+
+    <div th:each="store : ${stores}"
+         class="store-card"
+         th:classappend="${store.open == false} ? 'store-closed' : ''">
 
         <a th:href="@{'/store/' + ${store.id} + '/createorder'}">
-
 
             <div class="store-title" th:text="${store.storeName}"></div>
 
@@ -81,6 +119,7 @@
 
         </a>
     </div>
+
 </div>
 
 </body>

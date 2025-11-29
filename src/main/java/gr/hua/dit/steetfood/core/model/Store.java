@@ -1,16 +1,23 @@
 package gr.hua.dit.steetfood.core.model;
 
 
+import groovyjarjarantlr4.v4.runtime.misc.NotNull;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+
+import java.util.List;
 
 @Entity
 @Table(
@@ -50,20 +57,33 @@ public class Store {
     private String phoneNumber; //E164
 
     @Column(name = "store_open")
-    private boolean open = false; //TODO NA TO KANW KATEYUEIAN FALSE
+    private boolean open = true; //TODO NA TO KANW KATEYUEIAN FALSE
+
+    @NotNull
+    @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    List<FoodItem> foodItemList;
 
     public Store(){}
 
-    public Store(Long id, String storeName, String storeAddress, StoreType storeType, String phoneNumber,boolean open) {
+    public Store(Long id, String storeName, String storeAddress, StoreType storeType, String phoneNumber,boolean open, List<FoodItem> foodItemList) {
         this.id = id;
         this.storeName = storeName;
         this.storeAddress = storeAddress;
         this.storeType = storeType;
         this.phoneNumber = phoneNumber;
         this.open = open;
+        this.foodItemList = foodItemList;
     }
     public Long getId() { //FOR THYMELEAF!!!
         return id;
+    }
+
+    public List<FoodItem> getFoodItemList() {
+        return foodItemList;
+    }
+
+    public void setFoodItemList(List<FoodItem> foodItemList) {
+        this.foodItemList = foodItemList;
     }
 
     public Long getStoreId() {

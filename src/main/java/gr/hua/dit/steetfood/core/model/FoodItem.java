@@ -47,15 +47,16 @@ public class FoodItem {
     private FoodCategory category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id", nullable = false)
-    private Menu menu;
+    @JoinColumn(name = "store_id", nullable = false)
+    private Store store;      //TODO NA GINEI STORE ANTI GIA MENU, KAI DELETE MENU GENIKA
 
 
-    public FoodItem(Long id, String description, double price, final FoodCategory category) {
+    public FoodItem(Long id, String description, double price, final FoodCategory category, final Store store) {
         if (description == null ) throw new NullPointerException("description is null");
         if (description.isEmpty()) throw new IllegalArgumentException("description is empty");
         if (price <= 0) throw new IllegalArgumentException("price is negative");
         if (category == null) throw new NullPointerException("category is null");
+        if (store == null) throw new NullPointerException("store is null");
 
         //TODO: ISWS XREIAZETAI NA TA SBHSW
 
@@ -63,6 +64,7 @@ public class FoodItem {
         this.category = category;
         this.description = description;
         this.price = price;
+        this.store = store;
     }
     public FoodItem() {}
 
@@ -90,12 +92,12 @@ public class FoodItem {
         this.price = price;
     }
 
-    public Menu getMenu() {
-        return menu;
+    public Store getStore() {
+        return this.store;
     }
 
-    public void setMenu(Menu menu) {
-        this.menu = menu;
+    public void setStore(Store store) {
+        this.store = store;
     }
 
     public FoodCategory getCategory() {return this.category;}

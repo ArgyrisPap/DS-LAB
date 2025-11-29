@@ -38,13 +38,10 @@ public class Menu {
     @JoinColumn (name= "menu_store_id", nullable = false)
     private Store store;
 
-    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<FoodItem> foodItems;
 
-    public Menu(int id, Store store, List<FoodItem> foodItems) {
+    public Menu(int id, Store store) {
         this.id = id;
         this.store = store;
-        this.foodItems = foodItems;
     }
     public Menu() {}
 
@@ -64,16 +61,9 @@ public class Menu {
         this.store = store;
     }
 
-    public List<FoodItem> getFoodItems() {
-        return foodItems;
-    }
-
-    public void setFoodItems(List<FoodItem> foodItems) {
-        this.foodItems = foodItems;
-    }
     @Override
     public String toString() {
-        return "Menu{id=" + id + ", store=" + store + ", foodItems=" + foodItems + '}';
+        return "Menu{id=" + id + ", store=" + store + ", foodItems=" +  + '}';
     }
 
 }

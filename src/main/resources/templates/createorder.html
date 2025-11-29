@@ -157,7 +157,6 @@
       th:object="${orderFormRequest}">
 
     <!-- Hidden fields for personId and storeId -->
-    <input type="hidden" th:field="*{personId}" />
     <input type="hidden" th:field="*{storeId}" />
 
     <table>
@@ -194,8 +193,21 @@
     </table>
 
     <div class="button-group">
+
+        <!-- Order Type Dropdown -->
+        <select name="type" required
+                style="padding: 12px; border-radius: 4px; border: 1px solid #ddd; font-size: 16px;">
+            <option value="" disabled selected>Order Type</option>
+            <option value="TAKE_AWAY">Take Away</option>
+            <option value="DELIVERY">Delivery</option>
+        </select>
+
+        <!-- Submit -->
         <button type="submit">Submit Order</button>
+
+        <!-- Back -->
         <a href="/showstores" class="back-link">Back to Stores</a>
+
     </div>
 </form>
 

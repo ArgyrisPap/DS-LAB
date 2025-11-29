@@ -2,25 +2,24 @@ package gr.hua.dit.steetfood.core.service.impl;
 
 import gr.hua.dit.steetfood.core.model.FoodCategory;
 import gr.hua.dit.steetfood.core.model.FoodItem;
-import gr.hua.dit.steetfood.core.model.Menu;
 import gr.hua.dit.steetfood.core.model.Store;
 import gr.hua.dit.steetfood.core.model.StoreType;
 import gr.hua.dit.steetfood.core.repository.FoodItemRepository;
-import gr.hua.dit.steetfood.core.repository.MenuRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
-import gr.hua.dit.steetfood.core.service.InitializationService;
 import gr.hua.dit.steetfood.core.service.StoreService;
-import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 import jakarta.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -29,14 +28,11 @@ public class StoreServiceImpl implements StoreService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreServiceImpl.class);
     private final StoreRepository storeRepository;
     private final FoodItemRepository foodItemRepository;
-    private final MenuRepository menuRepository;
     private final AtomicBoolean initialized;
 
-    public StoreServiceImpl(StoreRepository storeRepository, FoodItemRepository foodItemRepository, MenuRepository menuRepository) {
+    public StoreServiceImpl(StoreRepository storeRepository, FoodItemRepository foodItemRepository) {
         if (storeRepository == null) throw new NullPointerException();
         if (foodItemRepository == null)throw new NullPointerException();
-        if (menuRepository == null)throw new NullPointerException();
-        this.menuRepository = menuRepository;
         this.storeRepository = storeRepository;
         this.foodItemRepository = foodItemRepository;
         this.initialized = new AtomicBoolean(false);
@@ -68,23 +64,22 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public List<Store> findStoresByType(StoreType type) {
-        /*if (type == null) throw new NullPointerException();
-        List <Store> allStores= this.storeRepository.findAll();
-
-        List<Store> storeList = new ArrayList<>();
-        for (Store store : allStores) {
-            if (store.getStoreType().equals(type)) storeList.add(store);
-        }
-        if (storeList.isEmpty()) throw new NullPointerException("Could not find any stores with that type");
-        return storeList;*/
         if (type == null) return new ArrayList<>();
         return this.storeRepository.findStoresByStoreType(type);
     }
 
     @Override
-    public Store getStoreById(Long id) {
-        if (!storeRepository.existsById(id)) throw new NullPointerException("Store not found");
-        return storeRepository.findById(id).orElse(null);
+    public Optional<Store> getStoreById(Long id) {
+        return storeRepository.findById(id);
+    }
+
+    @Override
+    public List <FoodItem> getFoodItemListByStoreId(Long storeId) {
+        final Store store = this.getStoreById(storeId).orElse(null);
+        if (store == null) throw new ResponseStatusException
+            (HttpStatusCode.valueOf(404), "Store (inside getfoodlist) not found");
+        return store.getFoodItemList();
+        //return List.copyOf(store.getFoodItemList());   ISWS EINAI KALUTERO
     }
 
     @Override
@@ -139,21 +134,17 @@ public class StoreServiceImpl implements StoreService {
         store1.setStoreName("Porto Leone");
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
-        store1.setOpen(true);
+        store1.setOpen(false);//testing
         Store savedStore = storeRepository.save(store1);
 
         List<FoodItem> foodItemsList1 = new ArrayList<>();
-        Menu menu1 = new Menu();
-        menu1.setStore(savedStore);
-        menu1.setFoodItems(foodItemsList1);
-        Menu savedMenu1 = menuRepository.save(menu1);
 
 
         FoodItem food1 = new FoodItem();
         food1.setDescription("french fries");
         food1.setPrice(3);
         food1.setCategory(FoodCategory.STARTER);
-        food1.setMenu(savedMenu1);
+        food1.setStore(savedStore);
         foodItemsList1.add(food1);
         FoodItem savedFood1= foodItemRepository.save(food1);
 
@@ -161,7 +152,7 @@ public class StoreServiceImpl implements StoreService {
         food2.setDescription("burger");
         food2.setPrice(4);
         food2.setCategory(FoodCategory.MEAT);
-        food2.setMenu(savedMenu1);
+        food2.setStore(savedStore);
         foodItemsList1.add(food2);
         FoodItem savedFood2= foodItemRepository.save(food2);
 
@@ -169,11 +160,10 @@ public class StoreServiceImpl implements StoreService {
         food3.setDescription("ceasers");
         food3.setPrice(7);
         food3.setCategory(FoodCategory.SALAD);
-        food3.setMenu(savedMenu1);
+        food3.setStore(savedStore);
         foodItemsList1.add(food3);
         FoodItem savedFood3= foodItemRepository.save(food3);
-
-        menuRepository.save (savedMenu1);
+        store1.setFoodItemList(foodItemsList1);
 
 
         //STORE 2========================
@@ -185,20 +175,16 @@ public class StoreServiceImpl implements StoreService {
         Store savedStore2 = storeRepository.save(store2);
 
         List<FoodItem> foodItemsList2 = new ArrayList<>();
-        Menu menu2 = new Menu();
-        menu2.setStore(savedStore2);
-        menu2.setFoodItems(foodItemsList2);
-        Menu savedMenu2 = menuRepository.save(menu2);
 
         FoodItem food4 = new FoodItem();
         food4.setDescription("ceasers");
         food4.setPrice(7);
         food4.setCategory(FoodCategory.SALAD);
-        food4.setMenu(savedMenu2);
+        food4.setStore(savedStore2);
         foodItemsList2.add(food4);
         FoodItem savedFood4= foodItemRepository.save(food4);
 
-        menuRepository.save (savedMenu2);
+        store2.setFoodItemList(foodItemsList2);
 
         //STORE 3========================
         Store store3 = new Store();
@@ -209,21 +195,15 @@ public class StoreServiceImpl implements StoreService {
         Store savedStore3 = storeRepository.save(store3);
 
         List<FoodItem> foodItemsList3 = new ArrayList<>();
-        Menu menu3 = new Menu();
-        menu3.setStore(savedStore3);
-        menu3.setFoodItems(foodItemsList3);
-        Menu savedMenu3 = menuRepository.save(menu3);
 
         FoodItem food5 = new FoodItem();
         food5.setDescription("Classic Burger");
         food5.setPrice(9.5);
         food5.setCategory(FoodCategory.MEAT);
-        food5.setMenu(savedMenu3);
+        food5.setStore(savedStore3);
         foodItemsList3.add(food5);
         FoodItem savedFood5= foodItemRepository.save(food5);
-
-        menuRepository.save (savedMenu3);
-
+        store3.setFoodItemList(foodItemsList3);
 
         //STORE 4========================
         Store store4 = new Store();
@@ -234,30 +214,15 @@ public class StoreServiceImpl implements StoreService {
         Store savedStore4 = storeRepository.save(store4);
 
         List<FoodItem> foodItemsList4 = new ArrayList<>();
-        Menu menu4 = new Menu();
-        menu4.setStore(savedStore4);
-        menu4.setFoodItems(foodItemsList4);
-        Menu savedMenu4 = menuRepository.save(menu4);
 
         FoodItem food6 = new FoodItem();
         food6.setDescription("Fish and chips");
         food6.setPrice(12.5);
         food6.setCategory(FoodCategory.FISH);
-        food6.setMenu(savedMenu4);
+        food6.setStore(savedStore4);
         foodItemsList4.add(food6);
         FoodItem savedFood6= foodItemRepository.save(food6);
-
-        menuRepository.save (savedMenu4);
-
-
-
-
-
-
-
-
-
-
+        store4.setFoodItemList(foodItemsList4);
 
 
 

@@ -30,17 +30,22 @@ public class OrderItem {
 
     @Column(name = "order_item_quantity")
     private int quantity;
+
     @Column (name = "order_item_price_at_order")
-    private double priceAtOrder;
+    private double priceAtOrder=0.0;
 
     public OrderItem() {}
 
-    public OrderItem(Long orderItemId, Order order, FoodItem foodItem, int quantity, double priceAtOrder) {
+    public OrderItem(Long orderItemId,
+                     Order order,
+                     FoodItem foodItem,
+                     int quantity) {
         this.orderItemId = orderItemId;
         this.order = order;
         this.foodItem = foodItem;
         this.quantity = quantity;
-        this.priceAtOrder = priceAtOrder;
+        System.out.println("+++++++++++++++++++++++++++++++++++++++++"+quantity);
+        this.priceAtOrder = this.foodItem.getPrice() * this.quantity;
     }
 
     public Long getOrderItemId() {
@@ -76,10 +81,10 @@ public class OrderItem {
     }
 
     public double getPriceAtOrder() {
+        System.out.println("TOTAL ORDER ITEM PRICE IS : "+this.priceAtOrder + " desc: "+
+            this.getFoodItem().getDescription() +" quantity: "+this.quantity);
         return priceAtOrder;
     }
 
-    public void setPriceAtOrder(double priceAtOrder) {
-        this.priceAtOrder = priceAtOrder;
-    }
+    public void setPriceAtOrder(double priceAtOrder) {   this.priceAtOrder = priceAtOrder;}
 }

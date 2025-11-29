@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Orders</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1>Orders</h1>
+</header>
+
+<section layout:fragment="main">
+
+    <div class="mb-4">
+        <a th:href="@{/profile}" th:text="'Logged in as: ' + ${me.emailAddress()} + ' (' + ${me.type()} + ')'"></a>
+    </div>
+
+    <table class="table mb-4">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Status</th>
+            <th>Student</th>
+            <th>Store</th>
+            <th>Queued</th>
+
+
+            <!--
+            <th>Actions</th>
+            -->
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="o : ${orders}">
+            <td>
+                <a th:href="@{|/orders/${o.id()}|}" th:text="${o.id()}"></a>
+            </td>
+            <td th:text="${o.status()}"></td>
+            <td th:text="${o.client().fullName()}"></td>
+            <td th:text="${o.store().storeName()}"></td>
+            <td th:text="${o.creatingDate()}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div th:if="${me.type().name() == 'STUDENT'}">
+        <a th:href="@{/showstores}">Create new order</a>
+    </div>
+
+</section>
+
+</body>
+</html>

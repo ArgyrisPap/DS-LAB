@@ -13,4 +13,8 @@ public record PersonView(
     String mobilePhoneNumber,
     String emailAddress,
     PersonType type
-) {}
+) {
+    public String fullName() {
+        return this.firstName + " " + this.lastName;
+    }
+}
