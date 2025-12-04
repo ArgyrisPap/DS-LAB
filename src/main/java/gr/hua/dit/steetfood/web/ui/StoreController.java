@@ -9,6 +9,7 @@ import gr.hua.dit.steetfood.core.service.StoreService;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -87,5 +89,18 @@ public class StoreController {
         model.addAttribute ("errorMessage", createStoreResult.reason());
         return "deletestore";
 
+    }
+
+    @GetMapping("/mystores")
+    public String showMyStores (Authentication authentication,
+                                Model model) {
+        if (!AuthUtils.isAuthenticated(authentication)){
+            return "redirect:/profile";
+        }
+        List <Store> stores = this.storeService.findMyStores();
+        if (stores.isEmpty()){
+            model.addAttribute ("stores",new ArrayList<Store>());
+        }
+        return "login"; //NOT READY YET
     }
 }

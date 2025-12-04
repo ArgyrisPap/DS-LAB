@@ -49,6 +49,8 @@ public class OrderMapper {
             orderItemQuantities,
             orderItemPrices,
             order.getCreationDate(),
+            order.getInProgressAt(),
+            order.getCompletedAt(),
             order.getStatus(),
             order.getType()
         );

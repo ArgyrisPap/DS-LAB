@@ -33,7 +33,7 @@ import java.util.List;
         //@Index(name = "idx_order_store_id", columnList = "store_id")
     }
 )
-public final class Order {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @Column(name = "order_id")
@@ -59,6 +59,12 @@ public final class Order {
     @Column(name = "order_creation_date")
     private Instant creationDate;
 
+    @Column(name = "in_progress_at")
+    private Instant inProgressAt;
+
+    @Column(name = "completed_at")
+    private Instant completedAt;
+
     @Enumerated (EnumType.STRING)
     @Column (name = "status", nullable = false, length = 16)
     private OrderStatus status;
@@ -80,7 +86,10 @@ public final class Order {
                  List<OrderItem> orderItems,
                  Instant creationDate,
                  OrderStatus status,
-                 OrderType type) {
+                 OrderType type,
+                 Double totalPrice,
+                 Instant inProgressAt,
+                 Instant completedAt) {
         this.id = id;
         this.person = person;
         this.store = store;
@@ -89,12 +98,39 @@ public final class Order {
         this.creationDate = creationDate;
         this.status = status;
         this.type = type;
+        this.totalPrice = totalPrice;
+        this.inProgressAt = inProgressAt;
+        this.completedAt = completedAt;
     }
     private void updatePrice (){ //INTERNAL METHOD FOR UPDATING PRICE EVERYTIME ORDERITEMS ARE UPDATED
         totalPrice=0.0;
         for (OrderItem orderItem : orderItems) {
             this.totalPrice +=  orderItem.getPriceAtOrder();
         }
+    }
+
+    public Instant getInProgressAt() {
+        return inProgressAt;
+    }
+
+    public void setInProgressAt(Instant inProgressAt) {
+        this.inProgressAt = inProgressAt;
+    }
+
+    public Instant getCompletedAt() {
+        return completedAt;
+    }
+
+    public void setCompletedAt(Instant completedAt) {
+        this.completedAt = completedAt;
+    }
+
+    public Double getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(Double totalPrice) {
+        this.totalPrice = totalPrice;
     }
 
     public Long getId() {

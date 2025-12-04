@@ -23,5 +23,7 @@ public interface StoreService {
 
     List <FoodItem> getFoodItemListByStoreId(Long storeId);
 
+    List <Store> findMyStores ();
+
 
 }

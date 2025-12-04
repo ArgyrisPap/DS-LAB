@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -43,9 +44,11 @@ public class Store {
     @Column(name= "store_id")
     private Long id;
 
+    @NotNull
     @Column(name="store_name", nullable = false, length = 50)
     private String storeName;
 
+    //@NotNull
     @Column(name = "store_address", nullable = false, length = 30)
     private String storeAddress;
 
@@ -53,6 +56,7 @@ public class Store {
     @Column(name= "store_type")
     private StoreType storeType;
 
+    @NotNull
     @Column(name ="store_phone_number", nullable = false, length = 18)
     private String phoneNumber; //E164
 
@@ -63,9 +67,21 @@ public class Store {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<FoodItem> foodItemList;
 
+    //@NotNull proswrino!!! mexri na balv lista me ta magazia anti gia myOrders koumpi
+    @ManyToOne
+    @JoinColumn(name = "owner_id")
+    private  Person owner;
+
     public Store(){}
 
-    public Store(Long id, String storeName, String storeAddress, StoreType storeType, String phoneNumber,boolean open, List<FoodItem> foodItemList) {
+    public Store(Long id,
+                 String storeName,
+                 String storeAddress,
+                 StoreType storeType,
+                 String phoneNumber,
+                 boolean open,
+                 List<FoodItem> foodItemList,
+                 Person owner) {
         this.id = id;
         this.storeName = storeName;
         this.storeAddress = storeAddress;
@@ -73,7 +89,17 @@ public class Store {
         this.phoneNumber = phoneNumber;
         this.open = open;
         this.foodItemList = foodItemList;
+        this.owner = owner;
     }
+
+    public Person getOwner() {
+        return owner;
+    }
+
+    public void setOwner(Person owner) {
+        this.owner = owner; //TODO ISWS MONO GIA ADMIN
+    }
+
     public Long getId() { //FOR THYMELEAF!!!
         return id;
     }
@@ -133,6 +159,7 @@ public class Store {
     public void setOpen(boolean open) {
         this.open = open;
     }
+
 
     @Override
     public String toString() {

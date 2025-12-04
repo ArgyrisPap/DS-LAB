@@ -26,6 +26,10 @@ public interface StoreRepository extends JpaRepository<Store,Long> {
 
     boolean existsByPhoneNumber(String phoneNumber);
 
+    Optional <Store> findByOwnerId(long id);
+
+    List <Store> findStoresByOwnerId(long id);
+
     //List <Store> getAllStores ();
 
 

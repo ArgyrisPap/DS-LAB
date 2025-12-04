@@ -1,7 +1,18 @@
 # application.yml (or application-dev.yml if you use profiles)
 spring:
   application:
-    name: Office Hours
+    name: Street Food GO
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: streetfoodgohua@gmail.com
+    password: jolhztnjsyqdbczl
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   datasource:
     url: jdbc:h2:file:./LOCAL_DATA/h2/app;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE

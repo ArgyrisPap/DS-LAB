@@ -13,9 +13,12 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
 import jakarta.persistence.UniqueConstraint;
+
+import jakarta.validation.constraints.NotNull;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.boot.autoconfigure.amqp.RabbitConnectionDetails;
@@ -75,8 +78,13 @@ public class Person {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @OneToMany(mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<PersonLocation> locations = new ArrayList<>();
+    @NotNull
+    @Column (name="raw_address")
+    private String rawAddress;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "address_id")
+    private Address address;
 
 
     public Person() {
@@ -90,7 +98,9 @@ public class Person {
                   String emailAddress,
                   PersonType type,
                   String passwordHash,
-                  Instant createdAt) {
+                  Instant createdAt,
+                  String rawAddress,
+                  Address address) {
         this.id = id;
         this.huaId = huaId;
         this.firstName = firstName;
@@ -100,7 +110,8 @@ public class Person {
         this.type = type;
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
-        this.locations = new ArrayList<>();
+        this.rawAddress = rawAddress;
+        this.address = address;
     }
 
     public Long getId() {
@@ -175,16 +186,30 @@ public class Person {
         this.createdAt = createdAt;
     }
 
-    public List<PersonLocation> getLocations() {return locations;    }
 
-    public void setLocations(List<PersonLocation> locations) {this.locations = locations;}
+    public String getRawAddress() {
+        return rawAddress;
+    }
+
+    public void setRawAddress(String rawAddress) {
+        this.rawAddress = rawAddress;
+    }
+
+    public Address getAddress() {
+        return address;
+    }
+
+    public void setAddress(Address address) {
+        this.address = address;
+    }
+
 
     @Override
     public String toString() {
         return "Person{" +
             "id=" + id +
             ", huaId='" + huaId + '\'' +
-            ", type=" + type + "locations=" + locations +
+            ", type=" + type + "locations="  +
             '}';
     }
 }

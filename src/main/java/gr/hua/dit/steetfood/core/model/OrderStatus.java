@@ -1,5 +1,6 @@
 package gr.hua.dit.steetfood.core.model;
 
 public enum OrderStatus {
-    SENT_AT,IN_PROCESS, IN_DELIVERY, COMPLETED
+    SENT_AT,IN_PROCESS, IN_DELIVERY, COMPLETED, DENIED
 }
+//IN_PROCESS = ACCEPTED (FROM OWNER)

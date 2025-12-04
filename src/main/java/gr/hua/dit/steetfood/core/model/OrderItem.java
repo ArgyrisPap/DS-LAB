@@ -81,8 +81,8 @@ public class OrderItem {
     }
 
     public double getPriceAtOrder() {
-        System.out.println("TOTAL ORDER ITEM PRICE IS : "+this.priceAtOrder + " desc: "+
-            this.getFoodItem().getDescription() +" quantity: "+this.quantity);
+        //System.out.println("TOTAL ORDER ITEM PRICE IS : "+this.priceAtOrder + " desc: "+
+           // this.getFoodItem().getDescription() +" quantity: "+this.quantity);
         return priceAtOrder;
     }
 

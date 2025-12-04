@@ -2,14 +2,21 @@ package gr.hua.dit.steetfood.core.service.impl;
 
 import gr.hua.dit.steetfood.core.model.FoodCategory;
 import gr.hua.dit.steetfood.core.model.FoodItem;
+import gr.hua.dit.steetfood.core.model.Person;
+import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.model.Store;
 import gr.hua.dit.steetfood.core.model.StoreType;
 import gr.hua.dit.steetfood.core.repository.FoodItemRepository;
+import gr.hua.dit.steetfood.core.repository.PersonRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
+import gr.hua.dit.steetfood.core.security.CurrentUser;
+import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 import gr.hua.dit.steetfood.core.service.StoreService;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 import jakarta.annotation.PostConstruct;
+
+import jakarta.persistence.EntityNotFoundException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,12 +36,18 @@ public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final FoodItemRepository foodItemRepository;
     private final AtomicBoolean initialized;
+    private final PersonRepository personRepository; //MONO GIA TESTING STHN EISAGWGH TWN STORES
+    private final CurrentUserProvider currentUserProvider;
 
-    public StoreServiceImpl(StoreRepository storeRepository, FoodItemRepository foodItemRepository) {
+    public StoreServiceImpl(StoreRepository storeRepository, FoodItemRepository foodItemRepository, PersonRepository personRepository, CurrentUserProvider currentUserProvider) {
         if (storeRepository == null) throw new NullPointerException();
         if (foodItemRepository == null)throw new NullPointerException();
+        if (personRepository == null)throw new NullPointerException();
+        if (currentUserProvider == null)throw new NullPointerException();
         this.storeRepository = storeRepository;
+        this.currentUserProvider = currentUserProvider;
         this.foodItemRepository = foodItemRepository;
+        this.personRepository = personRepository;
         this.initialized = new AtomicBoolean(false);
     }
 
@@ -71,6 +84,28 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Optional<Store> getStoreById(Long id) {
         return storeRepository.findById(id);
+    }
+
+    @Override
+    public List<Store> findMyStores() { //TODO NA GINEI LISTA APO STOREVIEW!!!
+        final CurrentUser currentUser =this.currentUserProvider.requireCurrentUser();
+        Long ownerId = currentUser.id();
+
+        final Person owner = personRepository.findById(ownerId).orElse(null);
+        if (owner == null) throw new IllegalArgumentException("Person with id:"+ownerId+" not found");
+        if (owner.getType() != PersonType.OWNER){throw new IllegalArgumentException("Person is not OWNER");}
+
+        List <Store> stores;
+        try {
+            stores = this.storeRepository.findStoresByOwnerId(ownerId);
+        }catch (EntityNotFoundException ignored){
+            LOGGER.warn("This person does not own any store");
+            stores = new ArrayList<>();
+        }
+
+
+        //if (stores == null) throw new IllegalArgumentException("This person does not own any store!");
+        return stores;
     }
 
     @Override
@@ -135,6 +170,7 @@ public class StoreServiceImpl implements StoreService {
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
         store1.setOpen(false);//testing
+        store1.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore = storeRepository.save(store1);
 
         List<FoodItem> foodItemsList1 = new ArrayList<>();
@@ -172,6 +208,7 @@ public class StoreServiceImpl implements StoreService {
         store2.setStoreName("La scala");
         store2.setPhoneNumber("2104648840");
         store2.setStoreType(StoreType.GYROS);
+        store2.setOwner(this.personRepository.findByHuaId("t0002").orElse(null));
         Store savedStore2 = storeRepository.save(store2);
 
         List<FoodItem> foodItemsList2 = new ArrayList<>();
@@ -192,6 +229,7 @@ public class StoreServiceImpl implements StoreService {
         store3.setStoreName("Burget Town");
         store3.setPhoneNumber("2104600003");
         store3.setStoreType(StoreType.BURGER);
+        store3.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore3 = storeRepository.save(store3);
 
         List<FoodItem> foodItemsList3 = new ArrayList<>();
@@ -211,6 +249,7 @@ public class StoreServiceImpl implements StoreService {
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
         store4.setStoreType(StoreType.BURGER);
+        store4.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore4 = storeRepository.save(store4);
 
         List<FoodItem> foodItemsList4 = new ArrayList<>();
@@ -222,8 +261,36 @@ public class StoreServiceImpl implements StoreService {
         food6.setStore(savedStore4);
         foodItemsList4.add(food6);
         FoodItem savedFood6= foodItemRepository.save(food6);
-        store4.setFoodItemList(foodItemsList4);
+        //store4.setFoodItemList(foodItemsList4);
 
+
+        FoodItem food7 = new FoodItem();
+        food7.setDescription("Smash burger");
+        food7.setPrice(9.5);
+        food7.setCategory(FoodCategory.MEAT);
+        food7.setStore(savedStore4);
+        foodItemsList4.add(food7);
+        FoodItem savedFood7= foodItemRepository.save(food7);
+        //store4.setFoodItemList(foodItemsList4);
+
+        FoodItem food8 = new FoodItem();
+        food8.setDescription("tzatziki");
+        food8.setPrice(3.25);
+        food8.setCategory(FoodCategory.STARTER);
+        food8.setStore(savedStore4);
+        foodItemsList4.add(food8);
+        FoodItem savedFood8= foodItemRepository.save(food8);
+        //store4.setFoodItemList(foodItemsList4);
+
+
+        FoodItem food9 = new FoodItem();
+        food9.setDescription("Greek salad");
+        food9.setPrice(7.5);
+        food9.setCategory(FoodCategory.SALAD);
+        food9.setStore(savedStore4);
+        foodItemsList4.add(food9);
+        FoodItem savedFood9= foodItemRepository.save(food9);
+        store4.setFoodItemList(foodItemsList4);
 
 
     }

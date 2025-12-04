@@ -34,7 +34,12 @@
             <li>
                 <a th:href="@{/logout}">Logout</a>
             </li>
+
         </ul>
+        <div th:if="${staticMapUrl != null}">
+            <h3>My Location</h3>
+            <img th:src="${staticMapUrl}" alt="User Location"/>
+        </div>
     </div>
 
 </section>

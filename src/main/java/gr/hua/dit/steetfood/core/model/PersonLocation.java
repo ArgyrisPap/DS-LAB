@@ -14,7 +14,7 @@ import jakarta.persistence.Table;
 
 import java.util.List;
 
-@Entity
+@Entity //WILL BE DELETED!!! DONT MIND THAT CLASS
 @Table(
     name= "person_location"
 )

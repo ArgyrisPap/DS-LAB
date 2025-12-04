@@ -15,6 +15,7 @@ import gr.hua.dit.steetfood.core.service.model.CreateOrderResult;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import gr.hua.dit.steetfood.core.service.model.OrderView;
+import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -69,7 +70,7 @@ public class OrderController {
         return "storemenu";
     }
 
-    //@PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/store/{id}/createorder")
     public String showCreateOrderPage(@PathVariable Long id, Model model,
         Authentication authentication) {
@@ -107,7 +108,7 @@ public class OrderController {
         return "createorder";
     }
 
-    @PreAuthorize("hasRole('STUDENT')")
+    @PreAuthorize("hasRole('USER')")
     @PostMapping("/store/{id}/createorder")
     public String handleCreateOrder(@PathVariable final Long id,
         @ModelAttribute("orderFormRequest") @Valid final CreateOrderFormReq orderFormRequest,
@@ -122,7 +123,6 @@ public class OrderController {
 
 
         Long storeId = id;
-        Long personId = 1L;
 
         // Convert to domain request
         List<OrderItemRequest> orderItemRequestList = this.orderService
@@ -143,27 +143,40 @@ public class OrderController {
 
         //final CreateOrderResult result = orderService.createOrder(createOrderRequest);
         final OrderView orderView = orderService.createOrder(createOrderRequest);
-        return "redirect:/login"; // order success TODO NA GINEI /orders/ + orderView.id()
+        return "redirect:/orders/" + orderView.id();
 
     }
     @GetMapping("/orders")
     public String list(final Model model) {
-        LOGGER.info("ENTERED ORDER LIST PAGE");
         final List<OrderView> orderViewList = this.orderService.getOrders();
-        LOGGER.info("EXITED .GETORDERS FROM SERVICE");
         model.addAttribute("orders", orderViewList);
         return "orders";
     }
 
     @GetMapping("orders/{orderId}")
     public String detail(@PathVariable final Long orderId, final Model model) {
-        final OrderView orderView = this.orderService.getOrder(orderId).orElse(null);
         if (orderId == null) {
-            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Ticket not found");
+            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Order not found");
         }
+        final OrderView orderView = this.orderService.getOrder(orderId).orElse(null);
+        if (orderView == null) {throw new SecurityException("Order not found");}
         model.addAttribute("order", orderView);
         model.addAttribute("completeOrderForm", null); // TODO Set.
         return "order";
+    }
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("orders/{orderId}/changeorder")
+    public String alterOrder(@PathVariable final Long orderId) {
+        Long storeId= this.orderService.changeOrder(orderId);
+
+        return "redirect:/store/"+storeId+"/createorder";
+    }
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("orders/{orderId}/start")
+    public String handleStartForm(@PathVariable final Long orderId) {
+        final StartOrderRequest startOrderRequest = new StartOrderRequest(orderId);
+        final OrderView orderView = this.orderService.startOrder(startOrderRequest);
+        return "redirect:/orders/" + orderView.id();
     }
 
 }

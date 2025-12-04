@@ -31,7 +31,7 @@ public final class CurrentUserProvider {
     }
     public long requiredStudentId() {
         final var currentUser = this.requireCurrentUser();
-        if (currentUser.type() != PersonType.STUDENT) throw new SecurityException("Student type/role required");
+        if (currentUser.type() != PersonType.USER) throw new SecurityException("Student type/role required");
         return currentUser.id();
     }
 }

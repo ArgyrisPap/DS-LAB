@@ -11,9 +11,11 @@ public record OrderView(
     PersonView client,
     StoreView store,
     List<String> orderItemDescriptions,
-    List <Integer> orderItemQuantites,
+    List <Integer> orderItemQuantities,
     List <Double> orderItemPrices,  //Total Prices of OrderItem. NOT THE PRICE OF INDIVIDUAL FOODITEM!!!
     Instant creatingDate,
+    Instant inProgressAt,
+    Instant completedAt,
     OrderStatus status,
     OrderType type
 
@@ -21,4 +23,11 @@ public record OrderView(
 
 
 ) {
+    public double totalPrice(){
+        double sum= 0.0;
+        for (Double price: orderItemPrices){
+            sum +=price;
+        }
+        return sum;
+    }
 }

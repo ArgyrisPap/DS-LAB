@@ -1,7 +1,6 @@
 package gr.hua.dit.steetfood.core.service.impl;
 
 import gr.hua.dit.steetfood.core.model.FoodItem;
-import gr.hua.dit.steetfood.core.model.Menu;
 import gr.hua.dit.steetfood.core.model.Order;
 import gr.hua.dit.steetfood.core.model.OrderItem;
 import gr.hua.dit.steetfood.core.model.OrderStatus;
@@ -14,18 +13,17 @@ import gr.hua.dit.steetfood.core.repository.PersonRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
 import gr.hua.dit.steetfood.core.security.CurrentUser;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
+import gr.hua.dit.steetfood.core.service.EmailService;
 import gr.hua.dit.steetfood.core.service.OrderService;
 
 import gr.hua.dit.steetfood.core.service.mapper.FoodItemMapper;
 import gr.hua.dit.steetfood.core.service.mapper.OrderMapper;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 
-import gr.hua.dit.steetfood.core.service.model.CreateOrderResult;
-
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import gr.hua.dit.steetfood.core.service.model.OrderView;
-import gr.hua.dit.steetfood.web.ui.OrderController;
+import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -50,25 +48,30 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PersonRepository personRepository;
     private final StoreRepository storeRepository;
+    private final EmailService emailService;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             PersonRepository personRepository,
                             StoreRepository storeRepository,
                             CurrentUserProvider currentUserProvider,
                             OrderMapper orderMapper,
-                            FoodItemMapper foodItemMapper) {
+                            FoodItemMapper foodItemMapper,
+                            EmailService emailService) {
         if (orderRepository == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (storeRepository == null) throw new NullPointerException();
         if (currentUserProvider == null) throw new NullPointerException();
         if (orderMapper == null) throw new NullPointerException();
         if (foodItemMapper == null) throw new NullPointerException();
+        if  (emailService == null) throw new NullPointerException();
+
         this.currentUserProvider = currentUserProvider;
         this.orderMapper = orderMapper;
         this.storeRepository = storeRepository;
         this.personRepository = personRepository;
         this.orderRepository = orderRepository;
         this.foodItemMapper = foodItemMapper;
+        this.emailService = emailService;
     }
 
     @Override
@@ -94,7 +97,7 @@ public class OrderServiceImpl implements OrderService {
 
         //---------------------
 
-        if (person.getType() != PersonType.STUDENT){ //TODO NA TO KANV USER 'h CLIENT
+        if (person.getType() != PersonType.USER){ //TODO NA TO KANV USER 'h CLIENT
             throw new IllegalArgumentException("person type must be STUDENT");
         }
 
@@ -102,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
         //---------------------
 
         final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
-        if (currentUser.type() != PersonType.STUDENT) {
+        if (currentUser.type() != PersonType.USER) {
             throw new SecurityException("Student type/role required");
         }
         if (currentUser.id() != personId) {
@@ -181,14 +184,33 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public List<OrderView> getOrders() {
         final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
-        LOGGER.info("ENTERED .GET ORDERS FROM SERVICE");
-        List <Order> orderList;
-        if (currentUser.type() == PersonType.STUDENT) {
+
+        List <Order> orderList= new ArrayList<>();
+        if (currentUser.type() == PersonType.USER) {
             orderList = this.orderRepository.findAllByPersonId(currentUser.id());
+        }else if(currentUser.type() == PersonType.OWNER){
+            //BRISKW POIO MAGAZI EXEI O TEACHER
+            //Store store = this.storeRepository.findByOwnerId(currentUser.id()).orElse(null); //TODO BUG! AN EXEI POLLA STORE POIO THA MOY GURISEI??
+            //den uelv na rijw exception dioti den einai prog. sfalma, apla o Owner den exei kapoio magazi (to epitrepoyme)
+            //if (store == null){return new ArrayList<>();}   //apla toy gyrizw adeia lista
+            long id = currentUser.id();
+            List <Store> stores=this.storeRepository.findStoresByOwnerId(id);
+            if (stores == null || stores.isEmpty()){return List.of();}
+            List <Long> storeIds= new ArrayList<>();
+
+            for (Store store : stores) {
+                //orderList.addAll(this.orderRepository.findAllByStoreId(store.getId()));
+                storeIds.add(store.getId());
+            }
+            for (Long storeId : storeIds) {
+                List <Order> ordersPerStore = this.orderRepository.findAllByStoreId(storeId);
+                orderList.addAll(ordersPerStore);
+            }
+
+            //orderList = this.orderRepository.findAllByStoreId(store.getId());
         }else {
-            throw new SecurityException("unsupported PersonType"); //MONO OI STUDENTS UELV
+            throw new SecurityException("unsupported PersonType"); //MONO OI STUDENTS/TEACHERs UELV
         }
-        LOGGER.info("ALMOST EXITED .GET ORDERS FROM SERVICE");
         return orderList.stream()
             .map(this.orderMapper::convertOrderToOrderView)
             .toList();
@@ -209,18 +231,114 @@ public class OrderServiceImpl implements OrderService {
         }
 
         final long orderPersonId;
-        if (currentUser.type() == PersonType.STUDENT) {
+        if (currentUser.type() == PersonType.USER) {
             orderPersonId = order.getPerson().getId();
+        }else if (currentUser.type() == PersonType.OWNER){
+            //Briskw to store pou einai linked me to order. Kai briskw to id tou owner
+            Store store = order.getStore();
+            orderPersonId = store.getOwner().getId();
         }else {
             throw new SecurityException("unsupported PersonType");
         }
         if (currentUser.id() != orderPersonId) {
             return Optional.empty(); // this Order does not exist for this user.
+            //OR: this user (owner) does not own the store which has that order!
         }
 
         final OrderView orderView = this.orderMapper.convertOrderToOrderView(order);
 
 
         return Optional.of(orderView);
+    }
+
+    @Override
+    public Long changeOrder(Long orderId) {
+        //Checks order status, delete entire order, then controller redirects to createoder form
+        if (orderId == null) throw new NullPointerException();
+        if (orderId <= 0) throw new IllegalArgumentException();
+
+        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
+
+        final Order order;
+        try {
+            order = this.orderRepository.getReferenceById(orderId);
+        } catch (EntityNotFoundException ignored) {
+            throw new RuntimeException("Order ID " + orderId + " not found");
+        }
+
+        final long orderPersonId;
+        if (currentUser.type() == PersonType.USER) {
+            orderPersonId = order.getPerson().getId();
+        }else {
+            throw new SecurityException("unsupported PersonType");
+        }
+        if (currentUser.id() != orderPersonId) {
+            throw new RuntimeException("this Order does not exist for this user."); //
+        }
+        if (order.getStatus().equals(OrderStatus.SENT_AT) ||
+            order.getStatus().equals(OrderStatus.IN_PROCESS) ){
+
+            this.orderRepository.deleteById(orderId); //TODO DEN EINAI SWSTO GIATI SBHNEI THN PALIA
+            this.orderRepository.save(order);
+            return order.getStore().getId();
+        }else {
+
+            throw new RuntimeException("Your order status is: " + order.getStatus()
+        +". You can't change your order!");
+
+        }
+    }
+    @Override
+    public OrderView startOrder(@Valid final StartOrderRequest startOrderRequest) {
+        if (startOrderRequest == null) throw new NullPointerException();
+
+        Long orderId = startOrderRequest.id();
+        final Order order =this.orderRepository.findOrderById(orderId).orElseThrow(
+            () -> new IllegalArgumentException("Order ID " + orderId + " not found"));
+
+        // Find if this order matches this owner (current user)
+        final long storeId = order.getStore().getId();
+        Store store = order.getStore();
+        if (store == null) {throw new NullPointerException();} //pleonasmos - den tha einai null logw @NotNull se Order
+        Person owner = store.getOwner();
+        if (owner == null) {throw new NullPointerException();}//pleonasmos - den tha einai null logw @NotNull se Order
+
+
+        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
+
+        //security
+        if (currentUser.type() != PersonType.OWNER) {throw new
+            SecurityException("unsupported PersonType. Only owner/store can start order!");}
+
+        if (currentUser.id() != owner.getId()) {
+            //throw new SecurityException ("This order id: "+order.getId() +" is not for your store!" );
+            throw new SecurityException ("You are not the owner of this oder's store!" );
+        }
+
+
+        //RULES--------------------------------------------
+        if (order.getStatus() != OrderStatus.SENT_AT) {
+            throw new IllegalArgumentException("Only sent at order status can be started");
+        }
+        //-------------------
+        order.setStatus(OrderStatus.IN_PROCESS);
+        order.setInProgressAt(Instant.now());
+
+        // update the order
+
+        final Order savedOrder = this.orderRepository.save(order);
+
+
+        final OrderView orderView = this.orderMapper.convertOrderToOrderView(savedOrder);
+
+        //TODO EMAIL NOTIFICATION FOR CHANGE ORDER STATUS
+        //find person's email who ordered
+        //final String to = order.getPerson().getEmailAddress();
+        String to = "arg.papa97@gmail.com"; //testing!
+        if (to == null) {throw new IllegalArgumentException();} // @NOT NULL IN ENTITY PERSON!
+
+
+        this.emailService.sendOrderStartEmail(to, orderId);
+        return orderView;
     }
 }

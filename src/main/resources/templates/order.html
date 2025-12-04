@@ -21,6 +21,8 @@
 
     <div class="mb-4">
         <a th:href="@{/profile}" th:text="'Logged in as: ' + ${me.emailAddress()} + ' (' + ${me.type()} + ')'"></a>
+        <a th:if="${#authorization.expression('hasRole(''USER'')')}" th:href="@{'/orders/' + ${order.id} + '/changeorder'}" th:text="'Change my order'"></a>
+
     </div>
 
     <ul class="mb-4">
@@ -28,27 +30,44 @@
         <li>User: <b th:text="${order.client().fullName()}"></b></li>
         <li>Teacher: <b th:text="${order.store().storeName()}"></b></li>
         <li>Queued at: <b th:text="${order.creatingDate()}"></b></li>
-        <!--
-        <li th:if="${ticket.inProgressAt() != null}">In progress at: <b th:text="${ticket.inProgressAt()}"></b></li>
-        <li th:if="${ticket.inProgressAt() != null}">Completed at: <b th:text="${ticket.completedAt()}"></b></li>
-        -->
+
+        <li th:if="${order.inProgressAt() != null}">In progress at: <b th:text="${order.inProgressAt()}"></b></li>
+        <li th:if="${order.completedAt() != null}">Completed at: <b th:text="${order.completedAt()}"></b></li>
+
         <li>Order Type: <b th:text="${order.type()}"></b></li>
-        <!--
-        <li th:if="${ticket.teacherContent() != null}">Teacher's Content: <b th:text="${ticket.teacherContent()}"></b></li>
-        -->
+        <li>Order DETAILS</li>
+        <table>
+            <thead>
+            <tr>
+                <th>#</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Price (€)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="desc, iterStat : ${order.orderItemDescriptions()}">
+                <td th:text="${iterStat.index + 1}">1</td>
+                <td th:text="${desc}">Description</td>
+                <td th:text="${order.orderItemQuantities()[iterStat.index]}">Qty</td>
+                <td th:text="${order.orderItemPrices()[iterStat.index]}">Price</td>
+            </tr>
+            </tbody>
+        </table>
+        <li>Total Price (€): <b th:text="${order.totalPrice()}"></b></li>
     </ul>
-<!--
 
-    <-- Teacher actions
-    <div th:if="${#authorization.expression('hasRole(''TEACHER'')')}">
 
-        <-- IN_PROGRESS / start
-        <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/tickets/${ticket.id()}/start|}" method="post">
+    <!-- Store actions -->
+    <div th:if="${#authorization.expression('hasRole(''OWNER'')')}">
+
+        <!-- IN_PROGRESS / start -->
+        <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/orders/${order.id()}/start|}" method="post">
             <button type="submit" class="btn btn-primary">Start</button>
         </form>
 
     </div>
-    -->
+
 </section>
 
 </body>
