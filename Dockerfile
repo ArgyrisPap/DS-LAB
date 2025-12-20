@@ -8,5 +8,6 @@ RUN ./mvnw clean package -DskipTests
 
 EXPOSE 8080
 
-CMD ["sh", "-c", "java -jar target/streetfood-0.0.1-SNAPSHOT.jar --server.port=${PORT}"]
+CMD ["sh", "-c", "java -jar target/streetfoodgo-0.0.1-SNAPSHOT.jar --server.port=${PORT}"]
+
 
