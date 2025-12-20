@@ -13,7 +13,8 @@ spring:
           auth: true
           starttls:
             enable: true
-
+server:
+  port: ${PORT:8080}
   datasource:
     url: jdbc:h2:file:./LOCAL_DATA/h2/app;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
     username: sa
