@@ -6,25 +6,27 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    password: ${MAIL_PASSWORD} #${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
           auth: true
           starttls:
             enable: true
-server:
-  port: ${PORT:8080}
+
   datasource:
-    url: jdbc:h2:file:./LOCAL_DATA/h2/app;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
-    username: sa
-    password: changeme
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://dpg-d58enhre5dus73dsju4g-a.frankfurt-postgres.render.com:5432/streetfoodgodb?sslmode=require
+    username: streetfoodgousr
+    password: 3tJwiivzhgwp0tK6PQp0GWr6jE0Jpbfr
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop   # dev only
+      ddl-auto: create-drop #update
     open-in-view: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.H2Dialect
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
+server:
+  port: 8080
+  #${PORT:8080}
