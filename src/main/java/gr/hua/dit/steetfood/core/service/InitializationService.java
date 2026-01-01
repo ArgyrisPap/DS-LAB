@@ -1,9 +1,11 @@
 package gr.hua.dit.steetfood.core.service;
 
+import gr.hua.dit.steetfood.core.model.Client;
 import gr.hua.dit.steetfood.core.model.Person;
 import gr.hua.dit.steetfood.core.model.PersonLocation;
 import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.port.impl.AddressPortImpl;
+import gr.hua.dit.steetfood.core.repository.ClientRepository;
 import gr.hua.dit.steetfood.core.repository.PersonLocationRepository;
 import gr.hua.dit.steetfood.core.repository.PersonRepository;
 import gr.hua.dit.steetfood.core.service.model.CreatePersonRequest;
@@ -28,21 +30,22 @@ public class InitializationService {
 
     private final PersonService personService;
     private final AtomicBoolean initialized;
-    private final PersonRepository personRepository; //TODO SBHSIMO
-    private final PersonLocationRepository personLocationRepository;
+    private final PersonRepository personRepository;
     private final AddressPortImpl addressPortImpl;
+    private final ClientRepository clientRepository;
 
     public InitializationService(final PersonService personService,
                                  final PersonRepository personRepository,
-                                 PersonLocationRepository personLocationRepository,
-                                 AddressPortImpl addressPortImpl) {
+                                 AddressPortImpl addressPortImpl,
+                                 ClientRepository clientRepository) {
         if (personService == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException(); //SBHSIMO
+        if (clientRepository == null)throw new NullPointerException();
         this.personService = personService;
         this.personRepository = personRepository; //SBHSBIMO
         this.initialized = new AtomicBoolean(false);
-        this.personLocationRepository = personLocationRepository;
         this.addressPortImpl = addressPortImpl;
+        this.clientRepository = clientRepository;
     }
 
     @PostConstruct
@@ -54,6 +57,12 @@ public class InitializationService {
         }
 
         LOGGER.info("Starting database initialization with initial data...");
+        final List<Client> clientList = List.of(
+            new Client(null, "client01", "s3cr3t", "INTEGRATION_READ,INTEGRATION_WRITE"),
+            new Client(null, "client02", "s3cr3t", "INTEGRATION_READ")
+        );
+        //LOGGER.info("DELETE ME, "+ clientList.toString());
+        this.clientRepository.saveAll(clientList);
         final List<CreatePersonRequest> createPersonRequestList = List.of(
             new CreatePersonRequest(
                 PersonType.OWNER,
@@ -99,6 +108,7 @@ public class InitializationService {
         for (final var createPersonRequest : createPersonRequestList) {
             this.personService.createPerson(createPersonRequest, false); // do not send SMS
         }
+        /*
         PersonLocation personLocation = new PersonLocation();
         personLocation.setId(null);
         personLocation.setZipCode(18900);
@@ -114,8 +124,8 @@ public class InitializationService {
         //System.out.println ("========before=======");
         //System.out.println(person.toString());
         this.personService.addLocationToPerson("t0001",personLocation);
-
+        */
         LOGGER.info("Database initialization completed successfully.");
-        this.addressPortImpl.findAdress("Πατησιων 76 Αθηνα");
+        //this.addressPortImpl.findAdress("Πατησιων 76 Αθηνα");
     }
 }

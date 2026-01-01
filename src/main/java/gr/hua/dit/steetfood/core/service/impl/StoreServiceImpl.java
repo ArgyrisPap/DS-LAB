@@ -160,12 +160,12 @@ public class StoreServiceImpl implements StoreService {
             LOGGER.warn("Database initialization skipped: initial data has already been populated.");
             return;
         }
-        LOGGER.info("Starting database initialization with initial data...");
+        LOGGER.info("Starting database (FOR STORES) initialization with initial data...");
 
 
         // 1. Store 1
         Store store1 = new Store();
-        store1.setStoreAddress("akti karaiskaki 40");
+        store1.setStoreAddress("Ακτη Καραϊσκακη 40 Σαλαμινα");
         store1.setStoreName("Porto Leone");
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
@@ -204,7 +204,7 @@ public class StoreServiceImpl implements StoreService {
 
         //STORE 2========================
         Store store2 = new Store();
-        store2.setStoreAddress("epidauroy 26");
+        store2.setStoreAddress("Ακτη Καραισκακη 42 Σαλαμινα");
         store2.setStoreName("La scala");
         store2.setPhoneNumber("2104648840");
         store2.setStoreType(StoreType.GYROS);
@@ -225,7 +225,7 @@ public class StoreServiceImpl implements StoreService {
 
         //STORE 3========================
         Store store3 = new Store();
-        store3.setStoreAddress("example 3 address");
+        store3.setStoreAddress("Επιδαυρου 26 Αιγαλεω");
         store3.setStoreName("Burget Town");
         store3.setPhoneNumber("2104600003");
         store3.setStoreType(StoreType.BURGER);
@@ -245,7 +245,7 @@ public class StoreServiceImpl implements StoreService {
 
         //STORE 4========================
         Store store4 = new Store();
-        store4.setStoreAddress("example 4 address");
+        store4.setStoreAddress("Παμβωτιδος 109 Γλυφαδα");
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
         store4.setStoreType(StoreType.BURGER);

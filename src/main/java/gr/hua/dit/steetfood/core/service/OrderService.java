@@ -1,5 +1,6 @@
 package gr.hua.dit.steetfood.core.service;
 
+import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderResult;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
@@ -25,5 +26,5 @@ public interface OrderService {
 
     OrderView startOrder (StartOrderRequest startOrderRequest);
 
-
+    Optional <RouteInfo> findOrderRouteInfo (Long orderId);
 }

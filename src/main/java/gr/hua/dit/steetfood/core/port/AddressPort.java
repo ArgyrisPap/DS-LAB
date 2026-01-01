@@ -11,4 +11,5 @@ public interface AddressPort {
     String getStaticMap (Double latitude, Double longitude);
 
 
+
 }

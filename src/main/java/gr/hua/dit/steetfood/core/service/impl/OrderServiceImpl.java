@@ -8,6 +8,10 @@ import gr.hua.dit.steetfood.core.model.OrderType;
 import gr.hua.dit.steetfood.core.model.Person;
 import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.model.Store;
+import gr.hua.dit.steetfood.core.port.AddressPort;
+import gr.hua.dit.steetfood.core.port.RoutePort;
+import gr.hua.dit.steetfood.core.port.impl.dto.AddressResult;
+import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.repository.OrderRepository;
 import gr.hua.dit.steetfood.core.repository.PersonRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
@@ -23,7 +27,9 @@ import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import gr.hua.dit.steetfood.core.service.model.OrderView;
+import gr.hua.dit.steetfood.core.service.model.PersonView;
 import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
+import gr.hua.dit.steetfood.core.service.model.StoreView;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -31,6 +37,7 @@ import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -49,6 +56,8 @@ public class OrderServiceImpl implements OrderService {
     private final PersonRepository personRepository;
     private final StoreRepository storeRepository;
     private final EmailService emailService;
+    private final RoutePort routePort;
+    private final AddressPort addressPort;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             PersonRepository personRepository,
@@ -56,7 +65,9 @@ public class OrderServiceImpl implements OrderService {
                             CurrentUserProvider currentUserProvider,
                             OrderMapper orderMapper,
                             FoodItemMapper foodItemMapper,
-                            EmailService emailService) {
+                            EmailService emailService,
+                            RoutePort routePort,
+                            AddressPort addressPort) {
         if (orderRepository == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (storeRepository == null) throw new NullPointerException();
@@ -64,6 +75,8 @@ public class OrderServiceImpl implements OrderService {
         if (orderMapper == null) throw new NullPointerException();
         if (foodItemMapper == null) throw new NullPointerException();
         if  (emailService == null) throw new NullPointerException();
+        if (routePort == null ) throw new NullPointerException();
+        if (addressPort == null) throw new NullPointerException();
 
         this.currentUserProvider = currentUserProvider;
         this.orderMapper = orderMapper;
@@ -72,6 +85,8 @@ public class OrderServiceImpl implements OrderService {
         this.orderRepository = orderRepository;
         this.foodItemMapper = foodItemMapper;
         this.emailService = emailService;
+        this.routePort= routePort;
+        this.addressPort = addressPort;
     }
 
     @Override
@@ -127,7 +142,8 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
         order.setCreationDate(Instant.now());
         order.setStatus(OrderStatus.SENT_AT);
-        order.setType(OrderType.DELIVERY);//TODO EINAI PROSVRINO GIATI TO EXV NULL, 'h BGAZV TO NULL 'h SKEFTOMAI KATI ALLO
+        order.setType(createOrderRequest.type());
+        //order.setType(OrderType.DELIVERY);//TODO EINAI PROSVRINO GIATI TO EXV NULL, 'h BGAZV TO NULL 'h SKEFTOMAI KATI ALLO
         //TODO BUG!!!!!! PREPEI OPVSDHPOTE NA TO ALLAJV GIATI MPOREI O XRHSTHS NA DWSEI PARAGGELIA
 
         //----CONVERT orderItemRequest list to orderItem list
@@ -340,5 +356,37 @@ public class OrderServiceImpl implements OrderService {
 
         this.emailService.sendOrderStartEmail(to, orderId);
         return orderView;
+    }
+    @Override
+    public Optional<RouteInfo> findOrderRouteInfo(Long orderId) {
+        //find the order
+        OrderView orderView = this.getOrder(orderId).orElseThrow();
+        if (orderView.type() != OrderType.DELIVERY) {
+            LOGGER.warn("BGHKA ME EMPTY ROUTE INFO");
+            return Optional.empty();
+        }
+        //extract store Address
+        String storeAddress= orderView.store().storeAddress();
+        if (storeAddress == null) return Optional.empty();
+        String storeAddressFormated = String.join("+", storeAddress.trim().split("\\s+"));
+        AddressResult storeAddressResult = this.addressPort.findAdress(storeAddressFormated).orElseThrow();
+        LOGGER.info("STORE ADDRESS!");
+        LOGGER.info("LAT="+storeAddressResult.lat()+"\nLON="+storeAddressResult.lon()+"\n=====================");
+
+
+        //extract person Address
+        String personAddress = orderView.client().rawAddress();
+        String personAddressFormated = String.join("+", personAddress.trim().split("\\s+"));
+        AddressResult personAddressResult = this.addressPort.findAdress(personAddressFormated).orElseThrow();
+
+        LOGGER.info("PERSON ADDRESS!");
+        LOGGER.info("LAT="+personAddressResult.lat()+"\nLON="+personAddressResult.lon()+"\n=====================");
+
+
+        RouteInfo routeInfo = this.routePort.getRoute(storeAddressResult.lat(), storeAddressResult.lon(),personAddressResult.lat(),personAddressResult.lon());
+
+        LOGGER.info("ROUTE INFO!!! DISTANCE="+routeInfo.distance()+" DURATION="+routeInfo.durationMinutes());
+
+        return Optional.of(routeInfo);
     }
 }

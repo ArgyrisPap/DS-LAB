@@ -56,7 +56,10 @@
         </table>
         <li>Total Price (€): <b th:text="${order.totalPrice()}"></b></li>
     </ul>
-
+    <li th:if="${routeInfo != null}">
+        Estimated route duration:
+        <b th:text="${routeInfo.durationMinutes()}"></b> minutes
+    </li>
 
     <!-- Store actions -->
     <div th:if="${#authorization.expression('hasRole(''OWNER'')')}">

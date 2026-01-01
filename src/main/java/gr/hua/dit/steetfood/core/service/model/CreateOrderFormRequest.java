@@ -1,5 +1,7 @@
 package gr.hua.dit.steetfood.core.service.model;
 
+import gr.hua.dit.steetfood.core.model.OrderType;
+
 import java.util.ArrayList;
 import java.util.List;
 //DTO gia na to perasw sto HTML, epeidh prin eixa
@@ -28,7 +30,7 @@ public class CreateOrderFormRequest {
                 items.add(new OrderItemRequest(foodItemIds.get(i), quantities.get(i)));
             }
         }
-        return new CreateOrderRequest(personId, storeId, items);
+        return new CreateOrderRequest(personId, storeId, items, OrderType.DELIVERY);
     }
     public CreateOrderRequest toCreateOrderRequest() {
         List<OrderItemRequest> items = new ArrayList<>();
@@ -45,7 +47,7 @@ public class CreateOrderFormRequest {
             }
         }
 
-        return new CreateOrderRequest(personId, storeId, items);
+        return new CreateOrderRequest(personId, storeId, items,OrderType.DELIVERY);
     }
     //ISWS PREPEI NA MPEI STO SERVICE ORDER
     public boolean hasValidItems() {

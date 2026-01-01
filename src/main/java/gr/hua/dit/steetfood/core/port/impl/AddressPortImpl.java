@@ -51,7 +51,7 @@ public class AddressPortImpl implements AddressPort {
         String url =RestApiClientConfig.GEOCODING_STATIC_MAP_BASE_URL+
             style+size+longitude+","+latitude+"&zoom=14&apiKey="+
             RestApiClientConfig.GEOCODING_API_KEY;
-        System.out.println(url);  //Cordinates are correct, next update, we will return the img where the source is openstreetmap
+        System.out.println(url);  //Cordinates are correct, next update, we will return the img where the source is from openstreetmap
         return url;
     }
 }

@@ -12,6 +12,7 @@ public record PersonView(
     String lastName,
     String mobilePhoneNumber,
     String emailAddress,
+    String rawAddress,
     PersonType type
 ) {
     public String fullName() {

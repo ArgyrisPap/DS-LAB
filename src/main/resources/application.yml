@@ -6,7 +6,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD} #${MAIL_PASSWORD}
+    password: ${MAIL_PASSWORD}
     properties:
       mail:
         smtp:
@@ -16,8 +16,8 @@ spring:
 
   datasource:
     url: jdbc:postgresql://dpg-d58enhre5dus73dsju4g-a.frankfurt-postgres.render.com:5432/streetfoodgodb?sslmode=require
-    username: streetfoodgousr
-    password: 3tJwiivzhgwp0tK6PQp0GWr6jE0Jpbfr
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -27,6 +27,18 @@ spring:
     properties:
       hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
+
+  # Custom Application Properties.
+app:
+    jwt:
+      issuer: "streetfoodgo-api"
+      audience: "external-systems"
+      secret: "${JWT_SECRET:Uh0WvRj5qs2sChP0dwTkky/VoudWSk0FVikEDDUKdRU=}" # openssl rand -base64 32
+      ttl-minutes: 60
+
 server:
   port: 8080
   #${PORT:8080}
+ors:
+  api:
+    key: ${ORS_API_KEY}

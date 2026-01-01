@@ -22,6 +22,7 @@ public class PersonMapper {
             person.getLastName(),
             person.getMobilePhoneNumber(),
             person.getEmailAddress(),
+            person.getRawAddress(),
             person.getType()
         );
         return personView;

@@ -1,13 +1,16 @@
 package gr.hua.dit.steetfood.web.ui;
 
 import gr.hua.dit.steetfood.core.model.FoodItem;
+import gr.hua.dit.steetfood.core.model.Order;
+import gr.hua.dit.steetfood.core.model.OrderStatus;
+import gr.hua.dit.steetfood.core.model.OrderType;
 import gr.hua.dit.steetfood.core.model.Store;
+import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 import gr.hua.dit.steetfood.core.service.OrderService;
 
 import gr.hua.dit.steetfood.core.service.StoreService;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderFormReq;
-import gr.hua.dit.steetfood.core.service.model.CreateOrderFormRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 
 import gr.hua.dit.steetfood.core.service.model.CreateOrderResult;
@@ -100,7 +103,7 @@ public class OrderController {
 
         //TODO AUTHENTICATION
         // Initialize empty form
-        final CreateOrderFormReq orderFormRequest = new CreateOrderFormReq(storeId, new ArrayList<Long> (), new ArrayList<Integer> () );
+        final CreateOrderFormReq orderFormRequest = new CreateOrderFormReq(storeId, new ArrayList<Long> (), new ArrayList<Integer> (), OrderType.DELIVERY );
         model.addAttribute("store", store);
         model.addAttribute("menuItems", menuItems);
         model.addAttribute("orderFormRequest", orderFormRequest);
@@ -132,10 +135,12 @@ public class OrderController {
         orderItemRequestList = orderItemRequestList.stream()
             .filter(oi -> oi.quantity() > 0)
             .toList();
+
         final CreateOrderRequest createOrderRequest= new CreateOrderRequest(
             this.currentUserProvider.requiredStudentId(),
             orderFormRequest.storeId(),
-            orderItemRequestList
+            orderItemRequestList,
+            orderFormRequest.type()
         );
 
         LOGGER.info("Converted to CreateOrderRequest with {} items",
@@ -160,10 +165,19 @@ public class OrderController {
         }
         final OrderView orderView = this.orderService.getOrder(orderId).orElse(null);
         if (orderView == null) {throw new SecurityException("Order not found");}
+        //TODO ROUTE INFO ΝΑ ΓΙΝΕΙ ASYNC
+        if (orderView.status() == OrderStatus.IN_PROCESS){
+            final RouteInfo routeInfo = this.orderService.findOrderRouteInfo(orderId).orElse(null);
+            model.addAttribute("routeInfo",routeInfo);
+        }
+
         model.addAttribute("order", orderView);
+
         model.addAttribute("completeOrderForm", null); // TODO Set.
         return "order";
     }
+
+
     @PreAuthorize("hasRole('USER')")
     @GetMapping("orders/{orderId}/changeorder")
     public String alterOrder(@PathVariable final Long orderId) {
