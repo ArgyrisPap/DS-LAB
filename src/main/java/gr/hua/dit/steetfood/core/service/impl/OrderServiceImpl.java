@@ -98,6 +98,7 @@ public class OrderServiceImpl implements OrderService {
         final long personId= createOrderRequest.personId();
         final long storeId= createOrderRequest.storeId();
         final List<OrderItemRequest> orderItemsRequest = createOrderRequest.orderItemRequestList();
+        final OrderType orderType = createOrderRequest.type();
 
         //--------------------- GET OBJECTS REQUIRED FOR NEW ORDER
         final Person person = this.personRepository.findById(personId)
@@ -106,14 +107,14 @@ public class OrderServiceImpl implements OrderService {
         final Store store = this.storeRepository.findById(storeId)
             .orElseThrow(() -> new IllegalArgumentException("store not found"));
 
-        List <OrderItem> orderItems = new ArrayList<>();
+        //List <OrderItem> orderItems = new ArrayList<>();
 
 
 
         //---------------------
 
-        if (person.getType() != PersonType.USER){ //TODO NA TO KANV USER 'h CLIENT
-            throw new IllegalArgumentException("person type must be STUDENT");
+        if (person.getType() != PersonType.USER){
+            throw new IllegalArgumentException("person type must be User");
         }
 
         // Security
@@ -121,39 +122,49 @@ public class OrderServiceImpl implements OrderService {
 
         final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
         if (currentUser.type() != PersonType.USER) {
-            throw new SecurityException("Student type/role required");
+            throw new SecurityException("User type/role required");
         }
         if (currentUser.id() != personId) {
-            throw new SecurityException("Authenticated student does not match the ticket's studentId");
+            throw new SecurityException("Authenticated user does not match the order's userId");
         }
 
         // Rules
         //---------------------
         //Store cannot be closed
-        if (!store.isOpen()) throw new RuntimeException("Store is not OPEN!");//TODO ELAXISTH PARAGGELIA!!!!
+        if (!store.isOpen()) throw new RuntimeException("Store is not OPEN!");
+
 
 
         //----------------------------------
+        Order order;
+        if (createOrderRequest.existingOrderId() != null) {
+            order = orderRepository.findById(createOrderRequest.existingOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("Order not found"));
 
-        Order order = new Order();
-        order.setId(null);
-        order.setPerson(person);
-        order.setStore(store);
-        order.setOrderItems(orderItems);
-        order.setCreationDate(Instant.now());
+            // ΠΡΟΣΟΧΗ: Καθαρίζουμε τα παλιά είδη για να μπουν τα νέα
+            order.getOrderItems().clear();
+            LOGGER.info("Ordered Items after:"+order.getOrderItems());
+        } else {
+            order = new Order();
+            order.setPerson(person);
+            order.setStore(store);
+            //order.setOrderItems(orderItems);
+            order.setCreationDate(Instant.now());
+            order.setId(null);
+        }
+
         order.setStatus(OrderStatus.SENT_AT);
-        order.setType(createOrderRequest.type());
-        //order.setType(OrderType.DELIVERY);//TODO EINAI PROSVRINO GIATI TO EXV NULL, 'h BGAZV TO NULL 'h SKEFTOMAI KATI ALLO
-        //TODO BUG!!!!!! PREPEI OPVSDHPOTE NA TO ALLAJV GIATI MPOREI O XRHSTHS NA DWSEI PARAGGELIA
+        order.setType(orderType);
+
 
         //----CONVERT orderItemRequest list to orderItem list
         //BRISKW EAN TA ANTIKEIMENA POY EBALE O XRHSTHS YPARXOYN STO MENU TOY KATASTATHMATOS POY EBALE
 
         List <FoodItem> foodItemsMenu = store.getFoodItemList();
-        //OrderView orderView;
         if (foodItemsMenu == null) throw new NullPointerException("this store does not have food items");
 
         int itemIdQ,i=0;
+        double totalPrice=0.0;
 
         for (OrderItemRequest req : orderItemsRequest) {
             Long itemIdReq = req.foodItemId();
@@ -178,16 +189,23 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setOrder(order);
             orderItem.setFoodItem(foodItem);
             orderItem.setQuantity(itemIdQ);
-            orderItem.setPriceAtOrder(foodItem.getPrice() * itemIdQ); //TO DO LAUOS YPOLOGISMOS
-            //PROSWRINO!!!!!!!!
-            orderItems.add(orderItem); //TODO NA MHN TO KANV ME .ADD
+            orderItem.setPriceAtOrder(foodItem.getPrice() * itemIdQ);
+            totalPrice += foodItem.getPrice() * itemIdQ;
+            order.getOrderItems().add(orderItem);
+            //orderItems.add(orderItem); //TODO NA MHN TO KANV ME .ADD
         }
-        order.setOrderItems(orderItems); //updated (not sure if needed)
+        LOGGER.info("TOTAL PRICE OF ORDER IS="+totalPrice);
+        //=======LAST BUSINESS RULE
+        if (orderType == OrderType.DELIVERY){
+
+            if (totalPrice < store.getMinOrder()){
+                throw new RuntimeException("Your Order's Total Price does not exceed Store's minimum Order Price");
+            }
+        }
+        //order.setOrderItems(orderItems); //updated (not sure if needed)
         order = this.orderRepository.save(order);
 
         final OrderView orderView = this.orderMapper.convertOrderToOrderView(order);
-        //TODO LOGIKH GIA NOTIFY XRHSTH ME MAIL GIA THN PARAGGELIA TOY!
-        //return orderView;
         return orderView;
 
     }
@@ -266,7 +284,21 @@ public class OrderServiceImpl implements OrderService {
 
         return Optional.of(orderView);
     }
+    public Long changeOrder(Long orderId) {
+        CurrentUser currentUser = currentUserProvider.requireCurrentUser();
 
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        if (order.getPerson().getId() != currentUser.id())
+            throw new SecurityException("Unauthorized");
+
+        if (order.getStatus() != OrderStatus.SENT_AT)
+            throw new RuntimeException("Order cannot be edited");
+
+        return order.getStore().getId();
+    }
+    /*
     @Override
     public Long changeOrder(Long orderId) {
         //Checks order status, delete entire order, then controller redirects to createoder form
@@ -295,6 +327,11 @@ public class OrderServiceImpl implements OrderService {
             order.getStatus().equals(OrderStatus.IN_PROCESS) ){
 
             this.orderRepository.deleteById(orderId); //TODO DEN EINAI SWSTO GIATI SBHNEI THN PALIA
+
+
+            order.setStatus(OrderStatus.SENT_AT);
+            order.setCreationDate(Instant.now());
+            //delete inprogress time
             this.orderRepository.save(order);
             return order.getStore().getId();
         }else {
@@ -303,7 +340,7 @@ public class OrderServiceImpl implements OrderService {
         +". You can't change your order!");
 
         }
-    }
+    }*/
     @Override
     public OrderView startOrder(@Valid final StartOrderRequest startOrderRequest) {
         if (startOrderRequest == null) throw new NullPointerException();

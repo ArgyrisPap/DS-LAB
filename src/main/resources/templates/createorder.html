@@ -158,6 +158,7 @@
 
     <!-- Hidden fields for personId and storeId -->
     <input type="hidden" th:field="*{storeId}" />
+    <input type="hidden" th:field="*{editOrderId}" />
 
     <table>
         <thead>
@@ -207,7 +208,7 @@
 
         <!-- Back -->
         <a href="/showstores" class="back-link">Back to Stores</a>
-
+        <p  th:text="'Min Delivery Order: ' + ${store.minOrder}">Min Order</p>
     </div>
 </form>
 

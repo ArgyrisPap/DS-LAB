@@ -48,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
         this.currentUserProvider = currentUserProvider;
         this.foodItemRepository = foodItemRepository;
         this.personRepository = personRepository;
-        this.initialized = new AtomicBoolean(false);
+        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP=FALSE, UPDATE=TRUE
     }
 
     @Override
@@ -169,6 +169,7 @@ public class StoreServiceImpl implements StoreService {
         store1.setStoreName("Porto Leone");
         store1.setPhoneNumber("2104654372");
         store1.setStoreType(StoreType.GYROS);
+        store1.setMinOrder(12);
         store1.setOpen(false);//testing
         store1.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore = storeRepository.save(store1);
@@ -208,6 +209,7 @@ public class StoreServiceImpl implements StoreService {
         store2.setStoreName("La scala");
         store2.setPhoneNumber("2104648840");
         store2.setStoreType(StoreType.GYROS);
+        store2.setMinOrder(8);
         store2.setOwner(this.personRepository.findByHuaId("t0002").orElse(null));
         Store savedStore2 = storeRepository.save(store2);
 
@@ -229,6 +231,7 @@ public class StoreServiceImpl implements StoreService {
         store3.setStoreName("Burget Town");
         store3.setPhoneNumber("2104600003");
         store3.setStoreType(StoreType.BURGER);
+        store3.setMinOrder(5);
         store3.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore3 = storeRepository.save(store3);
 
@@ -249,6 +252,7 @@ public class StoreServiceImpl implements StoreService {
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
         store4.setStoreType(StoreType.BURGER);
+        store4.setMinOrder(9);
         store4.setOwner(this.personRepository.findByHuaId("t0001").orElse(null));
         Store savedStore4 = storeRepository.save(store4);
 

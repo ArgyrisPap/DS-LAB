@@ -64,6 +64,10 @@ public class Store {
     private boolean open = true; //TODO NA TO KANW KATEYUEIAN FALSE
 
     @NotNull
+    @Column(name = "min_order")
+    private double minOrder;
+
+    @NotNull
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<FoodItem> foodItemList;
 
@@ -80,6 +84,7 @@ public class Store {
                  StoreType storeType,
                  String phoneNumber,
                  boolean open,
+                 double minOrder,
                  List<FoodItem> foodItemList,
                  Person owner) {
         this.id = id;
@@ -88,9 +93,14 @@ public class Store {
         this.storeType = storeType;
         this.phoneNumber = phoneNumber;
         this.open = open;
+        this.minOrder = minOrder;
         this.foodItemList = foodItemList;
         this.owner = owner;
     }
+
+    public double getMinOrder() {return minOrder;    }
+
+    public void setMinOrder(double minOrder) {this.minOrder = minOrder;}
 
     public Person getOwner() {
         return owner;

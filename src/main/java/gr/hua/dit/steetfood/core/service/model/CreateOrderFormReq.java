@@ -12,6 +12,7 @@ public record CreateOrderFormReq(
         @NotNull @Positive Long storeId,
         @NotNull @NotEmpty List<Long>foodItemIds,
         @NotNull @NotEmpty List<Integer> quantities,
-        @NotNull  OrderType type
+        @NotNull  OrderType type,
+        Long editOrderId // Προσθήκη για το Alter Order
 ) {
 }

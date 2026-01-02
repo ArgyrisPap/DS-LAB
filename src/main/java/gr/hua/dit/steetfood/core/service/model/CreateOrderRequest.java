@@ -12,7 +12,8 @@ public record CreateOrderRequest(
     @NotNull @Positive Long personId,
     @NotNull @Positive Long storeId,
     @NotNull @NotEmpty List<OrderItemRequest> orderItemRequestList,
-    @NotNull  OrderType type
+    @NotNull  OrderType type,
+    Long existingOrderId
 
 ) {
 }

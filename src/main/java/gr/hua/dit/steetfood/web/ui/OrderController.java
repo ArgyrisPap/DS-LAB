@@ -1,22 +1,16 @@
 package gr.hua.dit.steetfood.web.ui;
 
 import gr.hua.dit.steetfood.core.model.FoodItem;
-import gr.hua.dit.steetfood.core.model.Order;
 import gr.hua.dit.steetfood.core.model.OrderStatus;
 import gr.hua.dit.steetfood.core.model.OrderType;
 import gr.hua.dit.steetfood.core.model.Store;
 import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 import gr.hua.dit.steetfood.core.service.OrderService;
-
 import gr.hua.dit.steetfood.core.service.StoreService;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderFormReq;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
-
-import gr.hua.dit.steetfood.core.service.model.CreateOrderResult;
-
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
-
 import gr.hua.dit.steetfood.core.service.model.OrderView;
 import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
 import jakarta.validation.Valid;
@@ -33,6 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
@@ -75,6 +70,57 @@ public class OrderController {
 
     @PreAuthorize("hasRole('USER')")
     @GetMapping("/store/{id}/createorder")
+    public String showCreateOrderPage(@PathVariable Long id,
+                                      @RequestParam(required = false) Long editOrderId,
+                                      Model model,
+                                      Authentication authentication) {
+        LOGGER.info("Opening create order page");
+
+        if (!AuthUtils.isAuthenticated(authentication)) {
+            LOGGER.warn("REDIRECTING UNAUTHORIZED TO STORE MENU");
+            return "redirect:/store/" + id + "/menu";
+        }
+
+        Long storeId = id;
+        LOGGER.info("store id is {}, editOrderId is {}", storeId, editOrderId);
+
+        final Store store = storeService.getStoreById(storeId).orElse(null);
+        if (store == null) {
+            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found");
+        }
+
+        if (!store.isOpen()) {
+            LOGGER.warn("REDIRECTING FOR: CLOSED STORE TO STORE MENU ONLY");
+            return "redirect:/store/" + id + "/menu";
+        }
+
+        final List<FoodItem> menuItems = this.storeService.getFoodItemListByStoreId(storeId);
+        if (menuItems.isEmpty()) {
+            LOGGER.warn("Store {} has no menu items", storeId);
+            model.addAttribute("errorMessage", "This store has no available items at the moment");
+            return "showstores";
+        }
+
+        // Initialize form - Περνάμε το editOrderId στον constructor του Record
+        final CreateOrderFormReq orderFormRequest = new CreateOrderFormReq(
+            storeId,
+            new ArrayList<>(),
+            new ArrayList<>(),
+            OrderType.DELIVERY,
+            editOrderId
+        );
+
+        model.addAttribute("store", store);
+        model.addAttribute("menuItems", menuItems);
+        model.addAttribute("orderFormRequest", orderFormRequest);
+        // Κρατάμε το editingId στο μοντέλο για χρήση στο template αν χρειαστεί
+        model.addAttribute("editOrderId", editOrderId);
+
+        return "createorder";
+    }
+    /*
+    @PreAuthorize("hasRole('USER')")
+    @GetMapping("/store/{id}/createorder")
     public String showCreateOrderPage(@PathVariable Long id, Model model,
         Authentication authentication) {
         LOGGER.info("Opening create order page");
@@ -109,8 +155,51 @@ public class OrderController {
         model.addAttribute("orderFormRequest", orderFormRequest);
 
         return "createorder";
+    }*/
+    @PreAuthorize("hasRole('USER')")
+    @PostMapping("/store/{id}/createorder")
+    public String handleCreateOrder(@PathVariable final Long id,
+                                    @ModelAttribute("orderFormRequest") @Valid final CreateOrderFormReq orderFormRequest,
+                                    final BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            return "createorder";
+        }
+
+        LOGGER.info("=== CREATE/UPDATE ORDER REQUEST ===");
+        LOGGER.info("personId: {}", this.currentUserProvider.requiredStudentId());
+        LOGGER.info("storeId: {}", orderFormRequest.storeId());
+        LOGGER.info("editOrderId: {}", orderFormRequest.editOrderId());
+
+        // Μετατροπή των ειδών σε λίστα αντικειμένων παραγγελίας
+        List<OrderItemRequest> orderItemRequestList = this.orderService
+            .convertToOrderItemRequestList(orderFormRequest.foodItemIds(),
+                orderFormRequest.quantities());
+
+        orderItemRequestList = orderItemRequestList.stream()
+            .filter(oi -> oi.quantity() > 0)
+            .toList();
+
+        // Δημιουργία του Domain Request - Περνάμε το editOrderId από το form request
+        final CreateOrderRequest createOrderRequest = new CreateOrderRequest(
+            this.currentUserProvider.requiredStudentId(),
+            orderFormRequest.storeId(),
+            orderItemRequestList,
+            orderFormRequest.type(),
+            orderFormRequest.editOrderId() // Εδώ παίρνει την τιμή (Long ή null)
+        );
+
+        LOGGER.info("Converted to CreateOrderRequest with {} items. Is update: {}",
+            createOrderRequest.orderItemRequestList().size(),
+            //createOrderRequest.editOrderId() != null);
+            createOrderRequest.existingOrderId() != null);
+        // Το Service αναλαμβάνει να κάνει update αν το editOrderId != null
+        final OrderView orderView = orderService.createOrder(createOrderRequest);
+
+        return "redirect:/orders/" + orderView.id();
     }
 
+    /*
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/store/{id}/createorder")
     public String handleCreateOrder(@PathVariable final Long id,
@@ -140,7 +229,7 @@ public class OrderController {
             this.currentUserProvider.requiredStudentId(),
             orderFormRequest.storeId(),
             orderItemRequestList,
-            orderFormRequest.type()
+            orderFormRequest.type(), null //TODO NEW!
         );
 
         LOGGER.info("Converted to CreateOrderRequest with {} items",
@@ -150,7 +239,7 @@ public class OrderController {
         final OrderView orderView = orderService.createOrder(createOrderRequest);
         return "redirect:/orders/" + orderView.id();
 
-    }
+    }*/
     @GetMapping("/orders")
     public String list(final Model model) {
         final List<OrderView> orderViewList = this.orderService.getOrders();
@@ -183,7 +272,7 @@ public class OrderController {
     public String alterOrder(@PathVariable final Long orderId) {
         Long storeId= this.orderService.changeOrder(orderId);
 
-        return "redirect:/store/"+storeId+"/createorder";
+        return "redirect:/store/"+storeId+"/createorder?editOrderId="+orderId;
     }
     @PreAuthorize("hasRole('OWNER')")
     @PostMapping("orders/{orderId}/start")

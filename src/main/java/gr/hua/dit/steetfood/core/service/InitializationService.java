@@ -43,7 +43,7 @@ public class InitializationService {
         if (clientRepository == null)throw new NullPointerException();
         this.personService = personService;
         this.personRepository = personRepository; //SBHSBIMO
-        this.initialized = new AtomicBoolean(false);
+        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
         this.addressPortImpl = addressPortImpl;
         this.clientRepository = clientRepository;
     }

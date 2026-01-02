@@ -55,11 +55,6 @@
 <h1 th:text="'Menu of ' + ${store.storeName}">Store Menu</h1>
 
 <div class="menu-container">
-    <!--
-    <div th:if="${menuItems == null or menuItems.isEmpty()}" class="empty-message">
-        <p>No items available in this menu.</p>
-    </div>
-    -->
 
     <div th:each="item : ${menuItems}" class="menu-item-card">
         <div class="menu-item-description" th:text="${item.description}">Description</div>

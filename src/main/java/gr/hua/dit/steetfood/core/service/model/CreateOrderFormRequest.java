@@ -1,5 +1,5 @@
 package gr.hua.dit.steetfood.core.service.model;
-
+/*
 import gr.hua.dit.steetfood.core.model.OrderType;
 
 import java.util.ArrayList;
@@ -96,3 +96,4 @@ public class CreateOrderFormRequest {
         this.quantities = quantities;
     }
 }
+*/
