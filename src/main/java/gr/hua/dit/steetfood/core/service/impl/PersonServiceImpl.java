@@ -16,6 +16,7 @@ import gr.hua.dit.steetfood.core.service.PersonService;
 import gr.hua.dit.steetfood.core.service.mapper.PersonMapper;
 import gr.hua.dit.steetfood.core.service.model.CreatePersonRequest;
 import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
+import gr.hua.dit.steetfood.core.service.model.PersonProfileDTO;
 import gr.hua.dit.steetfood.core.service.model.PersonView;
 
 import jakarta.transaction.Transactional;
@@ -206,5 +207,22 @@ public class PersonServiceImpl implements PersonService {
         System.out.println ("========after=======");
         System.out.println(person.toString());
         personRepository.save(person);*/
+    }
+
+    @Override
+    public PersonProfileDTO getProfileData(Long personId) {
+        if (personId==null) throw new NullPointerException();
+        Person person = personRepository.findById(personId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String formattedAddress = String.join("+", person.getRawAddress().trim().split("\\s+"));
+
+        AddressResult addressResult = this.addressPort.findAdress(formattedAddress).orElse(null);
+        if (addressResult==null){
+            return new PersonProfileDTO(person,null,null);
+        }
+        LOGGER.info("EKTELESTHKE TO GETPROFILEDATA");
+        String mapUrl = this.addressPort.getStaticMap(addressResult.lat(),addressResult.lon());
+        return new PersonProfileDTO(person, addressResult,mapUrl);
     }
 }

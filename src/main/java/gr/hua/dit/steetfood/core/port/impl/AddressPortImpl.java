@@ -47,9 +47,10 @@ public class AddressPortImpl implements AddressPort {
     public String getStaticMap(Double latitude, Double longitude) {
         String style = "style=osm-bright";
         String size= "&width=400&height=200&center=lonlat:";
+        String marker = "&marker=lonlat:"+longitude+","+latitude;
 
         String url =RestApiClientConfig.GEOCODING_STATIC_MAP_BASE_URL+
-            style+size+longitude+","+latitude+"&zoom=14&apiKey="+
+            style+size+longitude+","+latitude+"&zoom=14"+marker+"&apiKey="+
             RestApiClientConfig.GEOCODING_API_KEY;
         System.out.println(url);  //Cordinates are correct, next update, we will return the img where the source is from openstreetmap
         return url;
