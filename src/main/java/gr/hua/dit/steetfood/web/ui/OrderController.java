@@ -68,7 +68,6 @@ public class OrderController {
         return "storemenu";
     }
 
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/store/{id}/createorder")
     public String showCreateOrderPage(@PathVariable Long id,
                                       @RequestParam(required = false) Long editOrderId,
