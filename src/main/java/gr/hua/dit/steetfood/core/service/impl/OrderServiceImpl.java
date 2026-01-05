@@ -399,7 +399,7 @@ public class OrderServiceImpl implements OrderService {
         //find the order
         OrderView orderView = this.getOrder(orderId).orElseThrow();
         if (orderView.type() != OrderType.DELIVERY) {
-            //LOGGER.warn("BGHKA ME EMPTY ROUTE INFO");
+            LOGGER.warn("BGHKA ME EMPTY ROUTE INFO");
             return Optional.empty();
         }
         //extract store Address

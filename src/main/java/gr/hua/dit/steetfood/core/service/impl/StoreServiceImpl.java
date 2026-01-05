@@ -248,7 +248,7 @@ public class StoreServiceImpl implements StoreService {
 
         //STORE 4========================
         Store store4 = new Store();
-        store4.setStoreAddress("Παμβωτιδος 109 Γλυφαδα");
+        store4.setStoreAddress("Λεωφορος Δημοκρατιας 109 Περαμα");
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
         store4.setStoreType(StoreType.BURGER);

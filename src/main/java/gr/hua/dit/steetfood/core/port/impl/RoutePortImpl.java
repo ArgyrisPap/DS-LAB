@@ -8,6 +8,10 @@ import gr.hua.dit.steetfood.core.port.RoutePort;
 import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,10 +41,23 @@ public class RoutePortImpl implements RoutePort {
             + "&start=" + lon1 + "," + lat1
             + "&end=" + lon2 + "," + lat2;
 
-        String response = restTemplate.getForObject(url, String.class);
+        //String response = restTemplate.getForObject(url, String.class); NOT SECURED! DELETED
+
+        //Correct and secure external api call with http header - such as Route in NOC
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Authorization", apiKey);
+
+        HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+        ResponseEntity<String> response = restTemplate.exchange(
+            url,
+            HttpMethod.GET,
+            entity,
+            String.class
+        );
 
         try {
-            JsonNode root = objectMapper.readTree(response);
+            JsonNode root = objectMapper.readTree(response.getBody());
 
             JsonNode summary = root
                 .path("features").get(0)

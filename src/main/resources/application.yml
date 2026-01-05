@@ -37,8 +37,21 @@ app:
       ttl-minutes: 60
 
 server:
+  address: 0.0.0.0
   port: 8080
   #${PORT:8080}
 ors:
   api:
     key: ${ORS_API_KEY}
+
+geocoding:
+  api:
+    key: ${GEOCODING_API_KEY}
+  static-map:
+    url:  https://maps.geoapify.com/v1/staticmap?
+
+external:
+  noc:
+    base-url: ${NOC_BASE_URL:http://localhost:8081}
+
+

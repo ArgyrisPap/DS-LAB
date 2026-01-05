@@ -1,5 +1,6 @@
 package gr.hua.dit.steetfood.core.port.impl;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -19,6 +20,8 @@ import gr.hua.dit.steetfood.core.port.impl.dto.SendSmsResult;
 public class SmsNotificationPortImpl implements SmsNotificationPort {
 
     private final RestTemplate restTemplate;
+    @Value ("${external.noc.base-url}")
+    private String nocBaseUrl;
 
     public SmsNotificationPortImpl(final RestTemplate restTemplate) {
         if (restTemplate == null) throw new NullPointerException();
@@ -49,7 +52,7 @@ public class SmsNotificationPortImpl implements SmsNotificationPort {
         // HTTP Request
         // --------------------------------------------------
 
-        final String baseUrl = RestApiClientConfig.BASE_URL;
+        final String baseUrl = nocBaseUrl;
         final String url = baseUrl + "/api/v1/sms";
         final HttpEntity<SendSmsRequest> entity = new HttpEntity<>(body, httpHeaders);
         final ResponseEntity<SendSmsResult> response = this.restTemplate.postForEntity(url, entity, SendSmsResult.class);

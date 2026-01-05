@@ -2,6 +2,7 @@ package gr.hua.dit.steetfood.core.port.impl;
 
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,6 +19,8 @@ import gr.hua.dit.steetfood.core.port.impl.dto.LookupResult;
 public class LookupPortImpl implements LookupPort {
 
     private final RestTemplate restTemplate;
+    @Value("${external.noc.base-url}")
+    private String nocBaseUrl;
 
     public LookupPortImpl(final RestTemplate restTemplate) {
         if (restTemplate == null) throw new NullPointerException();
@@ -32,7 +35,7 @@ public class LookupPortImpl implements LookupPort {
         // HTTP Request
         // --------------------------------------------------
 
-        final String baseUrl = RestApiClientConfig.BASE_URL;
+        final String baseUrl = nocBaseUrl;
         final String url = baseUrl + "/api/v1/lookups/" + huaId;
         final ResponseEntity<LookupResult> response = this.restTemplate.getForEntity(url, LookupResult.class);
 

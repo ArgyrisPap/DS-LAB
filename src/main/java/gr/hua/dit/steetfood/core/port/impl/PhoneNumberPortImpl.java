@@ -4,6 +4,7 @@ import gr.hua.dit.steetfood.config.RestApiClientConfig;
 import gr.hua.dit.steetfood.core.port.PhoneNumberPort;
 import gr.hua.dit.steetfood.core.port.impl.dto.PhoneNumberValidationResult;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -15,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 public class PhoneNumberPortImpl implements PhoneNumberPort {
 
     private final RestTemplate restTemplate;
+    @Value("${external.noc.base-url}")
+    private String nocBaseUrl;
 
     public PhoneNumberPortImpl(final RestTemplate restTemplate) {
         if (restTemplate == null) throw new NullPointerException();
@@ -29,7 +32,7 @@ public class PhoneNumberPortImpl implements PhoneNumberPort {
         // HTTP Request
         // --------------------------------------------------
 
-        final String baseUrl = RestApiClientConfig.BASE_URL;
+        final String baseUrl = nocBaseUrl;
         final String url = baseUrl + "/api/v1/phone-numbers/" + rawPhoneNumber + "/validations";
         final ResponseEntity<PhoneNumberValidationResult> response
             = this.restTemplate.getForEntity(url, PhoneNumberValidationResult.class);
