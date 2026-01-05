@@ -1,5 +1,11 @@
 package gr.hua.dit.steetfood.config;
 
+import gr.hua.dit.steetfood.core.security.JwtAuthenticationFilter;
+
+import gr.hua.dit.steetfood.web.rest.error.RestApiAccessDeniedHandler;
+
+import gr.hua.dit.steetfood.web.rest.error.RestApiAuthenticationEntryPoint;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -7,9 +13,12 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
  * Security configuration.
@@ -18,17 +27,45 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableMethodSecurity // enables @PreAuthorize
 public class SecurityConfig {
 
-    // TODO API Security (stateless - JWT based)
+    /**
+     * API chain {@code "/api/**"} (stateless, JWT).
+     */
+    @Bean
+    @Order(1)
+    public SecurityFilterChain apiChain(final HttpSecurity http,
+                                        final JwtAuthenticationFilter jwtAuthenticationFilter,
+                                        final RestApiAuthenticationEntryPoint restApiAuthenticationEntryPoint,
+                                        final RestApiAccessDeniedHandler restApiAccessDeniedHandler) throws Exception {
+        http
+            .securityMatcher("/api/v1/**")
+            .csrf(AbstractHttpConfigurer::disable)
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/client-tokens").permitAll()
+                .requestMatchers("/api/v1/**").authenticated()
+            )
+            .exceptionHandling(exh -> exh
+                .authenticationEntryPoint(restApiAuthenticationEntryPoint)
+                .accessDeniedHandler(restApiAccessDeniedHandler)
+            )
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .httpBasic(AbstractHttpConfigurer::disable)
+            .formLogin(AbstractHttpConfigurer::disable);
+        return http.build();
+    }
 
     /**
-     * UI chain {@code "/**"} (stateful - cookie based).
+     * UI chain {@code "/**"} (stateful, cookie based).
      */
     @Bean
     @Order(2)
     public SecurityFilterChain uiChain(final HttpSecurity http) throws Exception {
         http
             .securityMatcher("/**")
+            // Το αφήνουμε ως σχόλιο προσωρινά... TODO configure.
+            // .csrf(csrf -> csrf.ignoringRequestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**"))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/v3/api-docs/**", "/swagger-ui.html", "/swagger-ui/**").permitAll()
                 .requestMatchers("/", "/login", "/register").permitAll() // Public
                 .requestMatchers("/profile", "/logout").authenticated() // Private
                 .anyRequest().permitAll() // the rest
@@ -47,8 +84,7 @@ public class SecurityConfig {
                 .invalidateHttpSession(true)
                 .permitAll()
             )
-            // Disable basic security.
-            .httpBasic(basic -> {});
+            .httpBasic(AbstractHttpConfigurer::disable);
 
         return http.build();
     }

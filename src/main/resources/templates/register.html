@@ -11,7 +11,7 @@
 <body>
 
 <header layout:fragment="header">
-    <h1>Office Hours <small>/ Registration</small></h1>
+    <h1>Street Food GO <small>/ Registration</small></h1>
 </header>
 
 <section layout:fragment="main">
@@ -27,8 +27,8 @@
         <div class="mb-3">
             <label class="form-label">I am:</label>
             <select name="type" th:field="*{type}" class="form-select">
-                <option value="TEACHER">Teacher</option>
-                <option value="STUDENT">Student</option>
+                <option value="USER">User</option>
+                <option value="OWNER">Owner</option>
             </select>
         </div>
 
@@ -40,6 +40,11 @@
         <div class="mb-3">
             <label class="form-label">First Name</label>
             <input type="text" name="firstName" th:field="*{firstName}" class="form-control" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Address</label>
+            <input type="text" name="rawAddress" th:field="*{rawAddress}" class="form-control" placeholder="Example: StreetName Number City (without commas)" required />
         </div>
 
         <div class="mb-3">

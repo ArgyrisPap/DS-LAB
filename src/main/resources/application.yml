@@ -1,18 +1,44 @@
 # application.yml (or application-dev.yml if you use profiles)
 spring:
   application:
-    name: Office Hours
+    name: Street Food GO
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
   datasource:
-    url: jdbc:h2:file:./LOCAL_DATA/h2/app;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
-    username: sa
-    password: changeme
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://dpg-d58enhre5dus73dsju4g-a.frankfurt-postgres.render.com:5432/streetfoodgodb?sslmode=require
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: create-drop   # dev only
+      ddl-auto: update #update #create-drop
     open-in-view: false
     properties:
-      hibernate.dialect: org.hibernate.dialect.H2Dialect
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
       hibernate.format_sql: true
+
+  # Custom Application Properties.
+app:
+    jwt:
+      issuer: "streetfoodgo-api"
+      audience: "external-systems"
+      secret: "${JWT_SECRET:Uh0WvRj5qs2sChP0dwTkky/VoudWSk0FVikEDDUKdRU=}" # openssl rand -base64 32
+      ttl-minutes: 60
+
+server:
+  port: 8080
+  #${PORT:8080}
+ors:
+  api:
+    key: ${ORS_API_KEY}

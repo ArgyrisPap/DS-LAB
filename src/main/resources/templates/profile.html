@@ -11,7 +11,7 @@
 <body>
 
 <header layout:fragment="header">
-    <h1>Office Hours <small>/ Profile</small></h1>
+    <h1>Street Food GO <small>/ Profile</small></h1>
 </header>
 
 <section layout:fragment="main">
@@ -29,9 +29,17 @@
                 <a th:href="@{/profile}">Profile</a>
             </li>
             <li>
+                <a th:href="@{/orders}">My Orders</a>
+            </li>
+            <li>
                 <a th:href="@{/logout}">Logout</a>
             </li>
+
         </ul>
+        <div th:if="${profile?.mapUrl() != null}">
+            <h3>My Location</h3>
+            <img th:src="${profile.mapUrl()}" alt="User Location"/>
+        </div>
     </div>
 
 </section>

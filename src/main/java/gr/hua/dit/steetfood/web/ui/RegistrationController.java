@@ -34,7 +34,7 @@ public class RegistrationController {
             return "redirect:/profile";
         }
         // Initial data for the form.
-        final CreatePersonRequest createPersonRequest = new CreatePersonRequest(PersonType.STUDENT, "", "", "", "", "", "");
+        final CreatePersonRequest createPersonRequest = new CreatePersonRequest(PersonType.USER, "", "", "", "", "", "","");
         model.addAttribute("createPersonRequest", createPersonRequest);
         return "register";
     }
@@ -49,7 +49,7 @@ public class RegistrationController {
             return "redirect:/profile"; // already logged in.
         }
         // TODO Form validation + UI errors.
-        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest);
+        final CreatePersonResult createPersonResult = this.personService.createPerson(createPersonRequest,false );
         if (createPersonResult.created()) {
             return "redirect:/login"; // registration successful - redirect to login form (not yet ready)
         }

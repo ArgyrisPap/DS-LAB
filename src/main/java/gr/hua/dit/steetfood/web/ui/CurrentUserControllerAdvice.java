@@ -3,6 +3,10 @@ package gr.hua.dit.steetfood.web.ui;
 import gr.hua.dit.steetfood.core.security.CurrentUser;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 
+import gr.hua.dit.steetfood.core.service.PersonService;
+
+import gr.hua.dit.steetfood.core.service.model.PersonProfileDTO;
+
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ModelAttribute;
 
@@ -23,4 +27,5 @@ public class CurrentUserControllerAdvice {
     public CurrentUser addCurrentUserToModel() {
         return this.currentUserProvider.getCurrentUser().orElse(null);
     }
+
 }

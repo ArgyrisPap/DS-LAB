@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Store</title>
+</head>
+<body>
+
+<form th:action="@{/deletestore}" method="post">
+    <label for="storeId">Store ID:</label>
+    <input type="number" id="storeId" name="storeId" required>
+    <button type="submit">Delete Store</button>
+</form>
+
+<div th:if="${message}" th:text="${message}" style="color:green"></div>
+<div th:if="${errorMessage}" th:text="${errorMessage}" style="color:red"></div>
+
+</body>
+</html>
