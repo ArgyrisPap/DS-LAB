@@ -29,7 +29,6 @@ public class InitializationService {
     private static final Logger LOGGER = LoggerFactory.getLogger(InitializationService.class);
 
     private final PersonService personService;
-    private final AtomicBoolean initialized;
     private final PersonRepository personRepository;
     private final AddressPortImpl addressPortImpl;
     private final ClientRepository clientRepository;
@@ -43,15 +42,14 @@ public class InitializationService {
         if (clientRepository == null)throw new NullPointerException();
         this.personService = personService;
         this.personRepository = personRepository; //SBHSBIMO
-        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
+        //this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
         this.addressPortImpl = addressPortImpl;
         this.clientRepository = clientRepository;
     }
 
     @PostConstruct
     public void populateDatabaseWithInitialData() {
-        final boolean alreadyInitialized = this.initialized.getAndSet(true);
-        if (alreadyInitialized) {
+        if (clientRepository.count() > 0 || personRepository.count() > 0) {
             LOGGER.warn("Database initialization skipped: initial data has already been populated.");
             return;
         }

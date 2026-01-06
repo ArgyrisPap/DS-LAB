@@ -1,0 +1,33 @@
+services:
+  db:
+    image: postgres:16
+    container_name: streetfood-db
+    env_file: .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    container_name: streetfood-app
+    depends_on:
+      - db
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway" #το NOC,δηλαδη μεσα στο .env NOC_BASE_URL=http://host.docker.internal:8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: streetfood-proxy
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway" #το NOC,δηλαδη μεσα στο .env NOC_BASE_URL=http://host.docker.internal:8081
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:

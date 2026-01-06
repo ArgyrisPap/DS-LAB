@@ -35,7 +35,7 @@ public class StoreServiceImpl implements StoreService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreServiceImpl.class);
     private final StoreRepository storeRepository;
     private final FoodItemRepository foodItemRepository;
-    private final AtomicBoolean initialized;
+    //private final AtomicBoolean initialized;
     private final PersonRepository personRepository; //MONO GIA TESTING STHN EISAGWGH TWN STORES
     private final CurrentUserProvider currentUserProvider;
 
@@ -48,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
         this.currentUserProvider = currentUserProvider;
         this.foodItemRepository = foodItemRepository;
         this.personRepository = personRepository;
-        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
+        //this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
     }
 
     @Override
@@ -155,8 +155,8 @@ public class StoreServiceImpl implements StoreService {
 
     @PostConstruct
     public void initData (){
-        final boolean alreadyInitialized = this.initialized.getAndSet(true);
-        if (alreadyInitialized) {
+        //final boolean alreadyInitialized = this.initialized.getAndSet(true);
+        if (storeRepository.count() > 0) {
             LOGGER.warn("STORE Database initialization skipped: initial data has already been populated.");
             return;
         }
