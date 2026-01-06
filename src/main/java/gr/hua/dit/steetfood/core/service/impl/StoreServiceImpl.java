@@ -157,7 +157,7 @@ public class StoreServiceImpl implements StoreService {
     public void initData (){
         final boolean alreadyInitialized = this.initialized.getAndSet(true);
         if (alreadyInitialized) {
-            LOGGER.warn("Database initialization skipped: initial data has already been populated.");
+            LOGGER.warn("STORE Database initialization skipped: initial data has already been populated.");
             return;
         }
         LOGGER.info("Starting database (FOR STORES) initialization with initial data...");
@@ -248,7 +248,7 @@ public class StoreServiceImpl implements StoreService {
 
         //STORE 4========================
         Store store4 = new Store();
-        store4.setStoreAddress("Λεωφορος Δημοκρατιας 109 Περαμα");
+        store4.setStoreAddress("Σαλαμινος 24 Πειραιας");
         store4.setStoreName("Pizza Trattoria");
         store4.setPhoneNumber("2104600004");
         store4.setStoreType(StoreType.BURGER);

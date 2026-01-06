@@ -15,7 +15,7 @@ spring:
             enable: true
 
   datasource:
-    url: jdbc:postgresql://dpg-d58enhre5dus73dsju4g-a.frankfurt-postgres.render.com:5432/streetfoodgodb?sslmode=require
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:streetfoodgodb} # LOCAL POSTGRES!
     username: ${POSTGRES_USER}
     password: ${POSTGRES_PASSWORD}
     driver-class-name: org.postgresql.Driver
