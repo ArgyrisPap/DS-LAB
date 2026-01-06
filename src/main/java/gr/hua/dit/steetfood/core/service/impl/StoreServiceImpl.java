@@ -48,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
         this.currentUserProvider = currentUserProvider;
         this.foodItemRepository = foodItemRepository;
         this.personRepository = personRepository;
-        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP=FALSE, UPDATE=TRUE
+        this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
     }
 
     @Override
