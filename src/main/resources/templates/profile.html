@@ -38,6 +38,7 @@
         </ul>
         <div th:if="${profile?.mapUrl() != null}">
             <h3>My Location</h3>
+            <li>Address Given: <span th:text="${profile.person().getRawAddress()}"></span></li>
             <img th:src="${profile.mapUrl()}" alt="User Location"/>
         </div>
     </div>

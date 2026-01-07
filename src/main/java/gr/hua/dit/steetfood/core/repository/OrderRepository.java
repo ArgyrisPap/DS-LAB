@@ -15,8 +15,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findAllByStoreId(Long storeId);
 
-    List <Order> findAllByPersonId(Long studentId); //NA GINEI USER ID
-
-
+    List <Order> findAllByPersonId(Long studentId);
 
 }

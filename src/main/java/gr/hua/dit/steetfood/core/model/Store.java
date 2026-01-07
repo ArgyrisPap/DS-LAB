@@ -24,7 +24,6 @@ import java.util.List;
 @Table(
     name="store",
     uniqueConstraints = {
-        @UniqueConstraint(name="uk_store_id", columnNames = "store_id"),
         @UniqueConstraint(name ="uk_store_address", columnNames = "store_address"),
         @UniqueConstraint(name="uk_store_phone_number", columnNames = "store_phone_number")
         /*Assumptions:
@@ -71,7 +70,7 @@ public class Store {
     @OneToMany(mappedBy = "store", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     List<FoodItem> foodItemList;
 
-    //@NotNull proswrino!!! mexri na balv lista me ta magazia anti gia myOrders koumpi
+    @NotNull //proswrino!!! mexri na balv lista me ta magazia anti gia myOrders koumpi
     @ManyToOne
     @JoinColumn(name = "owner_id")
     private  Person owner;

@@ -66,6 +66,25 @@
         .store-closed:hover::after {
             opacity: 1;
         }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .back-link {
+            display: inline-block;
+            padding: 12px 24px;
+            color: #007bff;
+            text-decoration: none;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 
@@ -127,5 +146,8 @@
 
 </div>
 
+<div class="button-group">
+    <a href="/profile" class="back-link">Back to Profile</a>
+</div>
 </body>
 </html>

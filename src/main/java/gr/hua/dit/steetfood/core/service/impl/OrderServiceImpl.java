@@ -27,9 +27,7 @@ import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import gr.hua.dit.steetfood.core.service.model.OrderView;
-import gr.hua.dit.steetfood.core.service.model.PersonView;
 import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
-import gr.hua.dit.steetfood.core.service.model.StoreView;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -37,10 +35,10 @@ import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +46,7 @@ import java.util.Optional;
 @Service
 public class OrderServiceImpl implements OrderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
+    private final boolean fakeEmail = true; //TODO για να στελνονται τα εμαιλ μονο σε δικο μου email
 
     private final CurrentUserProvider currentUserProvider;
     private final OrderMapper orderMapper;
@@ -221,12 +220,18 @@ public class OrderServiceImpl implements OrderService {
 
         List <Order> orderList= new ArrayList<>();
         if (currentUser.type() == PersonType.USER) {
-            orderList = this.orderRepository.findAllByPersonId(currentUser.id());
+            orderList = this.orderRepository.findAllByPersonId(currentUser.id())
+                .stream()
+                .filter(order ->
+                    order.getStatus() != OrderStatus.DENIED
+                        || order.getVisibleUntil() == null
+                        || order.getVisibleUntil().isAfter(Instant.now())
+                ).toList();
+
         }else if(currentUser.type() == PersonType.OWNER){
-            //BRISKW POIO MAGAZI EXEI O TEACHER
-            //Store store = this.storeRepository.findByOwnerId(currentUser.id()).orElse(null); //TODO BUG! AN EXEI POLLA STORE POIO THA MOY GURISEI??
-            //den uelv na rijw exception dioti den einai prog. sfalma, apla o Owner den exei kapoio magazi (to epitrepoyme)
-            //if (store == null){return new ArrayList<>();}   //apla toy gyrizw adeia lista
+            //BRISKW POIO MAGAZI EXEI O OWNER
+
+
             long id = currentUser.id();
             List <Store> stores=this.storeRepository.findStoresByOwnerId(id);
             if (stores == null || stores.isEmpty()){return List.of();}
@@ -241,7 +246,6 @@ public class OrderServiceImpl implements OrderService {
                 orderList.addAll(ordersPerStore);
             }
 
-            //orderList = this.orderRepository.findAllByStoreId(store.getId());
         }else {
             throw new SecurityException("unsupported PersonType"); //MONO OI STUDENTS/TEACHERs UELV
         }
@@ -263,7 +267,8 @@ public class OrderServiceImpl implements OrderService {
         } catch (EntityNotFoundException ignored) {
             return Optional.empty();
         }
-
+        if (order.getVisibleUntil()!= null &&
+            order.getVisibleUntil().isBefore(Instant.now())) throw new SecurityException("This order does not exist anymore");
         final long orderPersonId;
         if (currentUser.type() == PersonType.USER) {
             orderPersonId = order.getPerson().getId();
@@ -298,101 +303,12 @@ public class OrderServiceImpl implements OrderService {
 
         return order.getStore().getId();
     }
-    /*
-    @Override
-    public Long changeOrder(Long orderId) {
-        //Checks order status, delete entire order, then controller redirects to createoder form
-        if (orderId == null) throw new NullPointerException();
-        if (orderId <= 0) throw new IllegalArgumentException();
-
-        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
-
-        final Order order;
-        try {
-            order = this.orderRepository.getReferenceById(orderId);
-        } catch (EntityNotFoundException ignored) {
-            throw new RuntimeException("Order ID " + orderId + " not found");
-        }
-
-        final long orderPersonId;
-        if (currentUser.type() == PersonType.USER) {
-            orderPersonId = order.getPerson().getId();
-        }else {
-            throw new SecurityException("unsupported PersonType");
-        }
-        if (currentUser.id() != orderPersonId) {
-            throw new RuntimeException("this Order does not exist for this user."); //
-        }
-        if (order.getStatus().equals(OrderStatus.SENT_AT) ||
-            order.getStatus().equals(OrderStatus.IN_PROCESS) ){
-
-            this.orderRepository.deleteById(orderId); //TODO DEN EINAI SWSTO GIATI SBHNEI THN PALIA
 
 
-            order.setStatus(OrderStatus.SENT_AT);
-            order.setCreationDate(Instant.now());
-            //delete inprogress time
-            this.orderRepository.save(order);
-            return order.getStore().getId();
-        }else {
-
-            throw new RuntimeException("Your order status is: " + order.getStatus()
-        +". You can't change your order!");
-
-        }
-    }*/
     @Override
     public OrderView startOrder(@Valid final StartOrderRequest startOrderRequest) {
-        if (startOrderRequest == null) throw new NullPointerException();
+        return this.matchesOwner(startOrderRequest, OrderStatus.IN_PROCESS);
 
-        Long orderId = startOrderRequest.id();
-        final Order order =this.orderRepository.findOrderById(orderId).orElseThrow(
-            () -> new IllegalArgumentException("Order ID " + orderId + " not found"));
-
-        // Find if this order matches this owner (current user)
-        final long storeId = order.getStore().getId();
-        Store store = order.getStore();
-        if (store == null) {throw new NullPointerException();} //pleonasmos - den tha einai null logw @NotNull se Order
-        Person owner = store.getOwner();
-        if (owner == null) {throw new NullPointerException();}//pleonasmos - den tha einai null logw @NotNull se Order
-
-
-        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
-
-        //security
-        if (currentUser.type() != PersonType.OWNER) {throw new
-            SecurityException("unsupported PersonType. Only owner/store can start order!");}
-
-        if (currentUser.id() != owner.getId()) {
-            //throw new SecurityException ("This order id: "+order.getId() +" is not for your store!" );
-            throw new SecurityException ("You are not the owner of this oder's store!" );
-        }
-
-
-        //RULES--------------------------------------------
-        if (order.getStatus() != OrderStatus.SENT_AT) {
-            throw new IllegalArgumentException("Only sent at order status can be started");
-        }
-        //-------------------
-        order.setStatus(OrderStatus.IN_PROCESS);
-        order.setInProgressAt(Instant.now());
-
-        // update the order
-
-        final Order savedOrder = this.orderRepository.save(order);
-
-
-        final OrderView orderView = this.orderMapper.convertOrderToOrderView(savedOrder);
-
-        //TODO EMAIL NOTIFICATION FOR CHANGE ORDER STATUS
-        //find person's email who ordered
-        //final String to = order.getPerson().getEmailAddress();
-        String to = "arg.papa97@gmail.com"; //testing!
-        if (to == null) {throw new IllegalArgumentException();} // @NOT NULL IN ENTITY PERSON!
-
-
-        this.emailService.sendOrderStartEmail(to, orderId);
-        return orderView;
     }
     @Override
     public Optional<RouteInfo> findOrderRouteInfo(Long orderId) {
@@ -425,5 +341,83 @@ public class OrderServiceImpl implements OrderService {
         LOGGER.info("ROUTE INFO!!! DISTANCE="+routeInfo.distance()+" DURATION="+routeInfo.durationMinutes());
 
         return Optional.of(routeInfo);
+    }
+    private OrderView matchesOwner (StartOrderRequest startOrderRequest, OrderStatus statusToAchieve){
+        if (statusToAchieve == null) throw new NullPointerException();
+        if (startOrderRequest == null) throw new NullPointerException();
+        if (statusToAchieve != OrderStatus.IN_PROCESS && statusToAchieve != OrderStatus.DENIED) throw new IllegalArgumentException("not yet implemented");
+
+
+        Long orderId = startOrderRequest.id();
+        final Order order =this.orderRepository.findOrderById(orderId).orElseThrow(
+            () -> new IllegalArgumentException("Order ID " + orderId + " not found"));
+
+        // Find if this order matches this owner (current user)
+        final long storeId = order.getStore().getId();
+        Store store = order.getStore();
+        if (store == null) {throw new NullPointerException();} //pleonasmos - den tha einai null logw @NotNull se Order
+        Person owner = store.getOwner();
+        if (owner == null) {throw new NullPointerException();}//pleonasmos - den tha einai null logw @NotNull se Store
+
+
+        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
+
+        //security
+        if (currentUser.type() != PersonType.OWNER) {throw new
+            SecurityException("unsupported PersonType. Only owner store can start/deny order!");}
+
+        if (currentUser.id() != owner.getId()) {
+            //throw new SecurityException ("This order id: "+order.getId() +" is not for your store!" );
+            throw new SecurityException ("You are not the owner of this oder's store!" );
+        }
+
+        //RULES--------------------------------------------
+
+        if (statusToAchieve == OrderStatus.IN_PROCESS ) {
+            if (order.getStatus() != OrderStatus.SENT_AT) throw new IllegalArgumentException("Only sent at order status can be started");
+            order.setStatus(OrderStatus.IN_PROCESS);
+            order.setInProgressAt(Instant.now());
+        }
+
+        if (statusToAchieve == OrderStatus.DENIED) {
+            if (order.getStatus() != OrderStatus.SENT_AT) throw new IllegalArgumentException("Only sent at order status can be denied");
+            order.setStatus(OrderStatus.DENIED);
+            order.setDeniedAt(Instant.now());
+            //TSET METHOD TO SET DELETED STATUS IN 5 MINUTES
+            order.setVisibleUntil(Instant.now().plus(2, ChronoUnit.MINUTES));
+
+        }
+
+        //-------------------
+
+        // update the order
+
+        final Order savedOrder = this.orderRepository.save(order);
+        final OrderView orderView = this.orderMapper.convertOrderToOrderView(savedOrder);
+
+        //find person's email who ordered
+        String to;
+        if (fakeEmail){
+            to = "arg.papa97@gmail.com"; //testing!
+        }else {
+            to = order.getPerson().getEmailAddress();
+        }
+
+        if (to == null) {throw new IllegalArgumentException();} // @NOT NULL IN ENTITY PERSON!
+
+        if (statusToAchieve == OrderStatus.DENIED){
+            this.emailService.sendOrderDeniedEmail(to, orderId);
+        }else if (statusToAchieve == OrderStatus.IN_PROCESS){
+            this.emailService.sendOrderStartEmail(to, orderId);
+        }
+
+
+        return orderView;
+    }
+
+    @Override
+    public OrderView denyOrder(@Valid StartOrderRequest startOrderRequest) {
+        return this.matchesOwner(startOrderRequest, OrderStatus.DENIED);
+
     }
 }

@@ -65,11 +65,17 @@ public class Order {
     @Column(name = "completed_at")
     private Instant completedAt;
 
+    @Column(name = "denied_at")
+    private Instant deniedAt;
+
+    @Column(name = "delete_at")
+    private Instant visibleUntil;
+
     @Enumerated (EnumType.STRING)
     @Column (name = "status", nullable = false, length = 16)
     private OrderStatus status;
 
-    //@NotNull
+    @NotNull
     @Enumerated (EnumType.STRING)
     @Column (name = "type", nullable = false, length = 16)
     private OrderType type;
@@ -89,7 +95,9 @@ public class Order {
                  OrderType type,
                  Double totalPrice,
                  Instant inProgressAt,
-                 Instant completedAt) {
+                 Instant completedAt,
+                 Instant deniedAt,
+                 Instant visibleUntil) {
         this.id = id;
         this.person = person;
         this.store = store;
@@ -101,6 +109,8 @@ public class Order {
         this.totalPrice = totalPrice;
         this.inProgressAt = inProgressAt;
         this.completedAt = completedAt;
+        this.deniedAt = deniedAt;
+        this.visibleUntil = visibleUntil;
     }
     private void updatePrice (){ //INTERNAL METHOD FOR UPDATING PRICE EVERYTIME ORDERITEMS ARE UPDATED
         totalPrice=0.0;
@@ -120,6 +130,14 @@ public class Order {
     public Instant getCompletedAt() {
         return completedAt;
     }
+
+    public Instant getDeniedAt() {return deniedAt;}
+
+    public void setDeniedAt(Instant deniedAt) {this.deniedAt = deniedAt;}
+
+    public Instant getVisibleUntil() {return visibleUntil;}
+
+    public void setVisibleUntil(Instant deleteAt) {this.visibleUntil = deleteAt;}
 
     public void setCompletedAt(Instant completedAt) {
         this.completedAt = completedAt;

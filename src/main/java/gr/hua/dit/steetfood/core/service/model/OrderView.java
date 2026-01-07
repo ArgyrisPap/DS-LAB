@@ -15,6 +15,7 @@ public record OrderView(
     List <Double> orderItemPrices,  //Total Prices of OrderItem. NOT THE PRICE OF INDIVIDUAL FOODITEM!!!
     Instant creatingDate,
     Instant inProgressAt,
+    Instant visibleUntil,
     Instant completedAt,
     OrderStatus status,
     OrderType type

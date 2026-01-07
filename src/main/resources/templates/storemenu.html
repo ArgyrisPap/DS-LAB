@@ -48,6 +48,25 @@
             color: #999;
             font-style: italic;
         }
+        .button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        .back-link {
+            display: inline-block;
+            padding: 12px 24px;
+            color: #007bff;
+            text-decoration: none;
+            border: 1px solid #007bff;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background-color: #007bff;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -63,7 +82,9 @@
     </div>
 </div>
 
-<a href="/showstores">Back to Stores</a>
+<div class="button-group">
+    <a href="/showstores" class="back-link">Back to Show Stores</a>
+</div>
 
 </body>
 </html>

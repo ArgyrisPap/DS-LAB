@@ -26,5 +26,7 @@ public interface OrderService {
 
     OrderView startOrder (StartOrderRequest startOrderRequest);
 
+    OrderView denyOrder (StartOrderRequest startOrderRequest);
+
     Optional <RouteInfo> findOrderRouteInfo (Long orderId);
 }

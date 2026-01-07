@@ -198,47 +198,6 @@ public class OrderController {
         return "redirect:/orders/" + orderView.id();
     }
 
-    /*
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping("/store/{id}/createorder")
-    public String handleCreateOrder(@PathVariable final Long id,
-        @ModelAttribute("orderFormRequest") @Valid final CreateOrderFormReq orderFormRequest,
-        final BindingResult bindingResult) {
-        if (bindingResult.hasErrors()){return "createorder";}
-
-        LOGGER.info("=== CREATE ORDER REQUEST ===");
-        LOGGER.info("personId: {}", this.currentUserProvider.requiredStudentId());
-        LOGGER.info("storeId: {}", orderFormRequest.storeId());
-        LOGGER.info("foodItemIds: {}", orderFormRequest.foodItemIds());
-        LOGGER.info("quantities: {}", orderFormRequest.quantities());
-
-
-        Long storeId = id;
-
-        // Convert to domain request
-        List<OrderItemRequest> orderItemRequestList = this.orderService
-            .convertToOrderItemRequestList(orderFormRequest.foodItemIds(),
-                orderFormRequest.quantities());
-
-        orderItemRequestList = orderItemRequestList.stream()
-            .filter(oi -> oi.quantity() > 0)
-            .toList();
-
-        final CreateOrderRequest createOrderRequest= new CreateOrderRequest(
-            this.currentUserProvider.requiredStudentId(),
-            orderFormRequest.storeId(),
-            orderItemRequestList,
-            orderFormRequest.type(), null //TODO NEW!
-        );
-
-        LOGGER.info("Converted to CreateOrderRequest with {} items",
-            createOrderRequest.orderItemRequestList().size());
-
-        //final CreateOrderResult result = orderService.createOrder(createOrderRequest);
-        final OrderView orderView = orderService.createOrder(createOrderRequest);
-        return "redirect:/orders/" + orderView.id();
-
-    }*/
     @GetMapping("/orders")
     public String list(final Model model) {
         final List<OrderView> orderViewList = this.orderService.getOrders();
@@ -253,7 +212,6 @@ public class OrderController {
         }
         final OrderView orderView = this.orderService.getOrder(orderId).orElse(null);
         if (orderView == null) {throw new SecurityException("Order not found");}
-        //TODO ROUTE INFO ΝΑ ΓΙΝΕΙ ASYNC
         if (orderView.status() == OrderStatus.IN_PROCESS){
             final RouteInfo routeInfo = this.orderService.findOrderRouteInfo(orderId).orElse(null);
             model.addAttribute("routeInfo",routeInfo);
@@ -278,6 +236,13 @@ public class OrderController {
     public String handleStartForm(@PathVariable final Long orderId) {
         final StartOrderRequest startOrderRequest = new StartOrderRequest(orderId);
         final OrderView orderView = this.orderService.startOrder(startOrderRequest);
+        return "redirect:/orders/" + orderView.id();
+    }
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("orders/{orderId}/deny")
+    public String handleDenyForm(@PathVariable final Long orderId) {
+        final StartOrderRequest startOrderRequest = new StartOrderRequest(orderId);
+        final OrderView orderView =this.orderService.denyOrder(startOrderRequest);
         return "redirect:/orders/" + orderView.id();
     }
 

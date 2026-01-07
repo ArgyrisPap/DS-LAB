@@ -50,6 +50,7 @@ public class OrderMapper {
             orderItemPrices,
             order.getCreationDate(),
             order.getInProgressAt(),
+            order.getVisibleUntil(),
             order.getCompletedAt(),
             order.getStatus(),
             order.getType()

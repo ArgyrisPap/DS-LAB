@@ -32,6 +32,7 @@
         <li>Queued at: <b th:text="${order.creatingDate()}"></b></li>
 
         <li th:if="${order.inProgressAt() != null}">In progress at: <b th:text="${order.inProgressAt()}"></b></li>
+        <li th:if="${order.visibleUntil() != null}">Visible until: <b th:text="${order.visibleUntil()}"></b></li>
         <li th:if="${order.completedAt() != null}">Completed at: <b th:text="${order.completedAt()}"></b></li>
 
         <li>Order Type: <b th:text="${order.type()}"></b></li>
@@ -62,11 +63,15 @@
     </li>
 
     <!-- Store actions -->
-    <div th:if="${#authorization.expression('hasRole(''OWNER'')')}">
+    <div th:if="${#authorization.expression('hasRole(''OWNER'')')}"
+        style="display: flex; gap: 10px;">
 
         <!-- IN_PROGRESS / start -->
         <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/orders/${order.id()}/start|}" method="post">
             <button type="submit" class="btn btn-primary">Start</button>
+        </form>
+        <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/orders/${order.id()}/deny|}" method="post">
+            <button type="submit" class="btn btn-primary">Deny</button>
         </form>
 
     </div>

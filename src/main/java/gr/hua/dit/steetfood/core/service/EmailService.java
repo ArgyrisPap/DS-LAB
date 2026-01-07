@@ -10,4 +10,6 @@ public interface EmailService {
     void sendHtmlEmail(String to, String subject, String htmlBody);
 
     void sendOrderStartEmail (String to, Long orderId);
+
+    void sendOrderDeniedEmail (String to, Long orderId);
 }
