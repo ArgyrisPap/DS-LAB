@@ -30,12 +30,13 @@ spring:
 
   # Custom Application Properties.
 app:
+    email:
+      enabled: ${APP_EMAIL_ENABLED:false}
     jwt:
       issuer: "streetfoodgo-api"
       audience: "external-systems"
       secret: "${JWT_SECRET:Uh0WvRj5qs2sChP0dwTkky/VoudWSk0FVikEDDUKdRU=}" # openssl rand -base64 32
       ttl-minutes: 60
-
 server:
   address: 0.0.0.0
   port: 8080

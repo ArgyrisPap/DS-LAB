@@ -1,0 +1,20 @@
+name: StreetFoodGO CI/CD
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to DigitalOcean via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST_IP }}
+          username: sammy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd ~/DS-LAB
+            chmod +x deploy.sh
+            ./deploy.sh

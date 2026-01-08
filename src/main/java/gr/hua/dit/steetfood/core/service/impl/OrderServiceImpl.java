@@ -35,6 +35,7 @@ import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -47,6 +48,8 @@ import java.util.Optional;
 public class OrderServiceImpl implements OrderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
     private final boolean fakeEmail = true; //TODO για να στελνονται τα εμαιλ μονο σε δικο μου email
+    @Value("${app.email.enabled}")
+    private boolean emailEnabled;
 
     private final CurrentUserProvider currentUserProvider;
     private final OrderMapper orderMapper;
@@ -397,20 +400,25 @@ public class OrderServiceImpl implements OrderService {
 
         //find person's email who ordered
         String to;
-        if (fakeEmail){
-            to = "arg.papa97@gmail.com"; //testing!
+        if (emailEnabled) {
+            if (fakeEmail) {
+                to = "arg.papa97@gmail.com"; //testing!
+            } else {
+                to = order.getPerson().getEmailAddress();
+            }
+
+            if (to == null) {
+                throw new IllegalArgumentException();
+            } // @NOT NULL IN ENTITY PERSON!
+
+            if (statusToAchieve == OrderStatus.DENIED) {
+                this.emailService.sendOrderDeniedEmail(to, orderId);
+            } else if (statusToAchieve == OrderStatus.IN_PROCESS) {
+                this.emailService.sendOrderStartEmail(to, orderId);
+            }
         }else {
-            to = order.getPerson().getEmailAddress();
+            LOGGER.info("EMAIL LOGIC SKIPPED!");
         }
-
-        if (to == null) {throw new IllegalArgumentException();} // @NOT NULL IN ENTITY PERSON!
-
-        if (statusToAchieve == OrderStatus.DENIED){
-            this.emailService.sendOrderDeniedEmail(to, orderId);
-        }else if (statusToAchieve == OrderStatus.IN_PROCESS){
-            this.emailService.sendOrderStartEmail(to, orderId);
-        }
-
 
         return orderView;
     }
