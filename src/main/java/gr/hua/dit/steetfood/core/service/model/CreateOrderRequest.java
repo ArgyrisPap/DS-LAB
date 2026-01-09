@@ -1,6 +1,5 @@
 package gr.hua.dit.steetfood.core.service.model;
 
-
 import gr.hua.dit.steetfood.core.model.OrderType;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

@@ -13,8 +13,6 @@ public interface StoreService {
 
     CreateStoreResult createStore (CreateStoreRequest createStoreRequest);
 
-    CreateStoreResult deleteStore (Long id);
-
     List <Store> getAllStores();
 
     List <Store> findStoresByType(StoreType type);
@@ -24,6 +22,10 @@ public interface StoreService {
     List <FoodItem> getFoodItemListByStoreId(Long storeId);
 
     List <Store> findMyStores ();
+
+    Optional <Store> isOwnerOfStore (Long storeId);
+
+    void changeStoreStatus(Store store);
 
 
 }

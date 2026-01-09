@@ -82,10 +82,6 @@ public class Person {
     @Column (name="raw_address")
     private String rawAddress;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "address_id")
-    private Address address;
-
 
     public Person() {
     }
@@ -99,8 +95,8 @@ public class Person {
                   PersonType type,
                   String passwordHash,
                   Instant createdAt,
-                  String rawAddress,
-                  Address address) {
+                  String rawAddress
+                  ) {
         this.id = id;
         this.huaId = huaId;
         this.firstName = firstName;
@@ -111,7 +107,7 @@ public class Person {
         this.passwordHash = passwordHash;
         this.createdAt = createdAt;
         this.rawAddress = rawAddress;
-        this.address = address;
+
     }
 
     public Long getId() {
@@ -195,13 +191,6 @@ public class Person {
         this.rawAddress = rawAddress;
     }
 
-    public Address getAddress() {
-        return address;
-    }
-
-    public void setAddress(Address address) {
-        this.address = address;
-    }
 
 
     @Override

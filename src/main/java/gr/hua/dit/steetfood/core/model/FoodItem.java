@@ -48,7 +48,7 @@ public class FoodItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
-    private Store store;      //TODO NA GINEI STORE ANTI GIA MENU, KAI DELETE MENU GENIKA
+    private Store store;
 
 
     public FoodItem(Long id, String description, double price, final FoodCategory category, final Store store) {

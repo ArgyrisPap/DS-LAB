@@ -28,11 +28,17 @@
             <li>
                 <a th:href="@{/profile}">Profile</a>
             </li>
-            <li>
+            <li th:if="${me.type.name() != 'ADMIN'}">
                 <a th:href="@{/orders}">My Orders</a>
             </li>
             <li>
                 <a th:href="@{/logout}">Logout</a>
+            </li>
+            <li th:if="${me.type.name() == 'OWNER'}">
+                <a th:href="@{/profile/mystores}">My Stores</a>
+            </li>
+            <li th:if="${me.type.name() == 'ADMIN'}">
+                <a th:href="@{/addstore}">Add Store</a>
             </li>
 
         </ul>

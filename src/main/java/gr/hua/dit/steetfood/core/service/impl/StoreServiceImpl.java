@@ -6,17 +6,22 @@ import gr.hua.dit.steetfood.core.model.Person;
 import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.model.Store;
 import gr.hua.dit.steetfood.core.model.StoreType;
+import gr.hua.dit.steetfood.core.port.PhoneNumberPort;
+import gr.hua.dit.steetfood.core.port.impl.dto.PhoneNumberValidationResult;
 import gr.hua.dit.steetfood.core.repository.FoodItemRepository;
 import gr.hua.dit.steetfood.core.repository.PersonRepository;
 import gr.hua.dit.steetfood.core.repository.StoreRepository;
 import gr.hua.dit.steetfood.core.security.CurrentUser;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 import gr.hua.dit.steetfood.core.service.StoreService;
+import gr.hua.dit.steetfood.core.service.model.CreatePersonResult;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 import jakarta.annotation.PostConstruct;
 
 import jakarta.persistence.EntityNotFoundException;
+
+import jakarta.transaction.Transactional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,40 +40,28 @@ public class StoreServiceImpl implements StoreService {
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreServiceImpl.class);
     private final StoreRepository storeRepository;
     private final FoodItemRepository foodItemRepository;
-    //private final AtomicBoolean initialized;
     private final PersonRepository personRepository; //MONO GIA TESTING STHN EISAGWGH TWN STORES
     private final CurrentUserProvider currentUserProvider;
+    private final PhoneNumberPort phoneNumberPort;
 
-    public StoreServiceImpl(StoreRepository storeRepository, FoodItemRepository foodItemRepository, PersonRepository personRepository, CurrentUserProvider currentUserProvider) {
+    public StoreServiceImpl(final StoreRepository storeRepository,
+                            final FoodItemRepository foodItemRepository,
+                            final PersonRepository personRepository,
+                            final CurrentUserProvider currentUserProvider,
+                            final PhoneNumberPort phoneNumberPort) {
         if (storeRepository == null) throw new NullPointerException();
         if (foodItemRepository == null)throw new NullPointerException();
         if (personRepository == null)throw new NullPointerException();
         if (currentUserProvider == null)throw new NullPointerException();
+        if (phoneNumberPort == null) throw new NullPointerException();
         this.storeRepository = storeRepository;
         this.currentUserProvider = currentUserProvider;
         this.foodItemRepository = foodItemRepository;
         this.personRepository = personRepository;
+        this.phoneNumberPort = phoneNumberPort;
         //this.initialized = new AtomicBoolean(true); //TODO CREATE-DROP & FIRST TIME UPDATE=FALSE, UPDATE=TRUE
     }
 
-    @Override
-    public CreateStoreResult deleteStore(Long id) {
-        //TODO ONLY FOR ADMIN OF SITE
-        if (!storeRepository.existsById(id)) {
-            return CreateStoreResult.fail("Store not found");
-        }
-        Store store =  storeRepository.findById(id).orElse(null);
-        String storeName= store.getStoreName();
-        String storeAddress= store.getStoreAddress();
-        String phoneNumber= store.getPhoneNumber();
-        StoreType storeType= store.getStoreType();
-        CreateStoreRequest createStoreRequest = new CreateStoreRequest(storeName,storeAddress,storeType,phoneNumber);
-
-        //TODO : PREPEI PRWTA NA KANV DELETE TOUS ALLOUS PINAKES
-        this.storeRepository.deleteById(id);
-
-        return CreateStoreResult.success(createStoreRequest);
-    }
     @Override
     public List<Store> getAllStores() {
         return storeRepository.findAll();
@@ -94,18 +87,35 @@ public class StoreServiceImpl implements StoreService {
         final Person owner = personRepository.findById(ownerId).orElse(null);
         if (owner == null) throw new IllegalArgumentException("Person with id:"+ownerId+" not found");
         if (owner.getType() != PersonType.OWNER){throw new IllegalArgumentException("Person is not OWNER");}
+        LOGGER.info("GIA TON OWNER NAME="+owner.getHuaId());
 
-        List <Store> stores;
+        List <Store> stores = this.storeRepository.findStoresByOwnerId(ownerId);
+        if (stores == null || stores.isEmpty()) {
+            LOGGER.warn("This person does not own any store");
+            return new ArrayList<>();
+        }
+        /*
         try {
             stores = this.storeRepository.findStoresByOwnerId(ownerId);
         }catch (EntityNotFoundException ignored){
             LOGGER.warn("This person does not own any store");
             stores = new ArrayList<>();
-        }
+        }*/
+        LOGGER.info("BRHKA TA STORES:"+stores.toString());
 
-
-        //if (stores == null) throw new IllegalArgumentException("This person does not own any store!");
         return stores;
+    }
+    @Override
+    public Optional <Store> isOwnerOfStore (Long storeId){
+        if (storeId==null) throw new NullPointerException("Store id is null");
+        List <Store> stores = this.findMyStores();
+        if (stores.isEmpty()) return Optional.empty();
+
+
+        return stores.stream()
+            .filter(store -> store.getId().equals(storeId))
+            .findFirst();
+
     }
 
     @Override
@@ -116,40 +126,54 @@ public class StoreServiceImpl implements StoreService {
         return store.getFoodItemList();
         //return List.copyOf(store.getFoodItemList());   ISWS EINAI KALUTERO
     }
+    @Override
+    @Transactional
+    public void changeStoreStatus(Store store) {
+        store.setOpen(!store.isOpen());
+        storeRepository.save(store);
+    }
 
     @Override
+    @Transactional
     public CreateStoreResult createStore(CreateStoreRequest createStoreRequest) {
         if (createStoreRequest ==null) throw new NullPointerException();
+        Person owner = personRepository.findById(createStoreRequest.ownerId())
+            .orElseThrow(() -> new RuntimeException("Owner not found"));
 
-        final String storeAddress = createStoreRequest.storeAddress();
         final String storeName = createStoreRequest.storeName().strip();
-        final String storePhoneNumber = createStoreRequest.phoneNumber().strip();
+        final String storeAddress = createStoreRequest.storeAddress();
         final StoreType storeType = createStoreRequest.storeType();
+        String storePhoneNumber = createStoreRequest.phoneNumber().strip();
+        final double minOrder = createStoreRequest.minOrder();
+        final Long ownerId = createStoreRequest.ownerId();
+
     //TODO ONLY FOR ADMIN OF SITE
-    //TODO NA SYNEXISV NA KANV TOUS ELEGXOUS GIA TO THLEFWNO
-        /*final PhoneNumberValidationResult phoneNumberValidationResult
-            = this.phoneNumberPort.validate(mobilePhoneNumber);
-        if (!phoneNumberValidationResult.isValidMobile()) {
-            return CreatePersonResult.fail("Mobile Phone Number is not valid");
-        }
-        mobilePhoneNumber = phoneNumberValidationResult.e164();*/
+        /**/
          if (this.storeRepository.existsByStoreAddress(storeAddress)) {
              return CreateStoreResult.fail("Store with address:"+storeAddress+" already exists");
          }
          if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
              return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
          }
+        final PhoneNumberValidationResult phoneNumberValidationResult
+            = this.phoneNumberPort.validate(storePhoneNumber);
+        if (!phoneNumberValidationResult.isValidMobile()) {
+            return CreateStoreResult.fail("Mobile Phone Number is not valid");
+        }
+        storePhoneNumber = phoneNumberValidationResult.e164();
 
          Store store= new Store();
          store.setStoreId(null);
-         store.setStoreAddress(storeAddress);
          store.setStoreName(storeName);
-         store.setPhoneNumber(storePhoneNumber);
+         store.setStoreAddress(storeAddress);
          store.setStoreType(storeType);
+         store.setPhoneNumber(storePhoneNumber);
+         store.setMinOrder(minOrder);
+         store.setFoodItemList(new ArrayList<FoodItem>());
          store.setOpen(false); //ALWAYS FALSE AT START
+         store.setOwner(owner);
 
         store= this.storeRepository.save(store);
-
         return CreateStoreResult.success(createStoreRequest);
     }
 

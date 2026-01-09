@@ -50,6 +50,7 @@ public class OrderController {
 
     @GetMapping("/store/{id}/menu")
     public String showStoreMenu(@PathVariable Long id, Model model) {
+        if (id == null) throw new NullPointerException();
         Store store = storeService.getStoreById(id).orElse(null);
         if (store == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found");
@@ -117,44 +118,6 @@ public class OrderController {
 
         return "createorder";
     }
-    /*
-    @PreAuthorize("hasRole('USER')")
-    @GetMapping("/store/{id}/createorder")
-    public String showCreateOrderPage(@PathVariable Long id, Model model,
-        Authentication authentication) {
-        LOGGER.info("Opening create order page");
-        if (!AuthUtils.isAuthenticated(authentication)) {
-            LOGGER.warn ("REDIRECTING UNAUTHORIZED TO STORE MENU");
-            return "redirect:/store/"+id+"/menu";
-        }
-        Long storeId = id;
-
-        LOGGER.info("store id is {}", storeId);
-        long personId =this.currentUserProvider.requiredStudentId();
-        final Store store = storeService.getStoreById(storeId).orElse(null);
-        if (store == null){
-            throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found");
-        }
-        if (!store.isOpen()){
-            LOGGER.warn ("REDIRECTING FOR: CLOSED STORE TO STORE MENU ONLY");
-            return "redirect:/store/"+id+"/menu";
-        }
-        final List<FoodItem> menuItems = this.storeService.getFoodItemListByStoreId(storeId);
-        if (menuItems.isEmpty()){
-            LOGGER.warn("Store {} has no menu items", storeId);
-            model.addAttribute("errorMessage", "This store has no available items at the moment");
-            return "showstores";
-        }
-
-        //TODO AUTHENTICATION
-        // Initialize empty form
-        final CreateOrderFormReq orderFormRequest = new CreateOrderFormReq(storeId, new ArrayList<Long> (), new ArrayList<Integer> (), OrderType.DELIVERY );
-        model.addAttribute("store", store);
-        model.addAttribute("menuItems", menuItems);
-        model.addAttribute("orderFormRequest", orderFormRequest);
-
-        return "createorder";
-    }*/
     @PreAuthorize("hasRole('USER')")
     @PostMapping("/store/{id}/createorder")
     public String handleCreateOrder(@PathVariable final Long id,

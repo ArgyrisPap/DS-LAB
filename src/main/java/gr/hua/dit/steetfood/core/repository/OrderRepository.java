@@ -2,6 +2,7 @@ package gr.hua.dit.steetfood.core.repository;
 
 import gr.hua.dit.steetfood.core.model.Order;
 
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

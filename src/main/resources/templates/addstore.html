@@ -5,57 +5,74 @@
     layout:decorate="~{base}">
 
 <head>
-    <title>Add Store</title>
+    <title>Add New Store</title>
 </head>
 
 <body>
 
 <header layout:fragment="header">
-    <h1>Street Food GO <small>/ Add Store Form</small></h1>
+    <h1>Street Food GO <small>/ Add New Store</small></h1>
 </header>
 
 <section layout:fragment="main">
 
-    <!-- REGISTRATION FORM -->
     <form th:action="@{/addstore}" method="post" th:object="${createStoreRequest}">
 
-        <!-- ERROR MESSAGE -->
         <div class="text-center mb-3" th:if="${errorMessage != null}">
             <p class="text-danger m-0 p-0" th:text="${errorMessage}"></p>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">I am:</label>
-            <select name="type" th:field="*{storeType}" class="form-select">
-                <option value="PIZZA">Pizzeria</option>
-                <option value="BURGER">Burgeradiko</option>
-                <option value="GYROS">Gyros-Psitopolio</option>
-            </select>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label">Store Name</label>
-            <input type="text" name="huaId" th:field="*{storeName}" class="form-control"  required />
+            <input type="text" th:field="*{storeName}" class="form-control" placeholder="Example: To Souvlaki tou HUA" required />
+            <p class="text-danger small" th:if="${#fields.hasErrors('storeName')}" th:errors="*{storeName}"></p>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Store Address</label>
-            <input type="text" name="firstName" th:field="*{storeAddress}" class="form-control" placeholder="Example: Omirou 36" required />
+            <label class="form-label">Address</label>
+            <input type="text" th:field="*{storeAddress}" class="form-control" placeholder="Street Name Number City" required />
+            <p class="text-danger small" th:if="${#fields.hasErrors('storeAddress')}" th:errors="*{storeAddress}"></p>
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Phone Number</label>
-            <input type="tel" name="lastName" th:field="*{phoneNumber}" class="form-control" required />
+            <label class="form-label">Store Category</label>
+            <select th:field="*{storeType}" class="form-select" required>
+                <option value="" selected disabled>-- Select Category --</option>
+                <option th:each="type : ${storeTypes}" th:value="${type}" th:text="${type}"></option>
+            </select>
+            <p class="text-danger small" th:if="${#fields.hasErrors('storeType')}" th:errors="*{storeType}"></p>
         </div>
 
+        <div class="mb-3">
+            <label class="form-label">Store Phone Number</label>
+            <input type="tel" th:field="*{phoneNumber}" class="form-control" placeholder="Example: 2101234567" required />
+            <p class="text-danger small" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Minimum Order (€)</label>
+            <input type="number" step="0.50" th:field="*{minOrder}" class="form-control" required />
+            <p class="text-danger small" th:if="${#fields.hasErrors('minOrder')}" th:errors="*{minOrder}"></p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Assign to Owner</label>
+            <select th:field="*{ownerId}" class="form-select" required>
+                <option value="" selected disabled>-- Select an Owner --</option>
+                <option th:each="owner : ${owners}"
+                        th:value="${owner.id}"
+                        th:text="${owner.firstName + ' ' + owner.lastName + ' (' + owner.emailAddress + ')'}">
+                </option>
+            </select>
+            <p class="text-danger small" th:if="${#fields.hasErrors('ownerId')}" th:errors="*{ownerId}"></p>
+        </div>
 
         <div class="mb-4">
-            <button type="submit" class="btn btn-primary">Click To Add Store</button>
+            <button type="submit" class="btn btn-primary w-100">Create Store</button>
         </div>
 
-        <!-- USEFUL LINKS -->
-        <p class="m-0 p-0">
-            <a th:href="@{/login}">Already have an account? Log in</a>
+        <p class="m-0 p-0 text-center">
+            <a th:href="@{/profile}">Back to Profile</a>
         </p>
 
     </form>

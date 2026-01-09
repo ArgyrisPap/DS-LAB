@@ -1,6 +1,5 @@
 package gr.hua.dit.steetfood.core.service.impl;
 
-import gr.hua.dit.steetfood.core.model.Address;
 import gr.hua.dit.steetfood.core.model.Person;
 import gr.hua.dit.steetfood.core.model.PersonLocation;
 import gr.hua.dit.steetfood.core.model.PersonType;
@@ -27,6 +26,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -73,6 +73,7 @@ public class PersonServiceImpl implements PersonService {
         this.addressPort = addressPort;
     }
 
+    @Transactional
     @Override
     public CreatePersonResult createPerson(final CreatePersonRequest createPersonRequest, final boolean notify) {
         if (createPersonRequest == null) throw new NullPointerException();
@@ -157,8 +158,8 @@ public class PersonServiceImpl implements PersonService {
             // anazhthsh: den einai aparaithta sfalma ths efarmoghs 'h toy xrhsth
 
             //Convert AdressResult to Address (manually)
-            Address address = new Address(null, addressResult.lat(), addressResult.lon(), addressResult.display_name());
-            person.setAddress(address);
+            //Address address = new Address(null, addressResult.lat(), addressResult.lon(), addressResult.display_name());
+            //person.setAddress(address);
         }
         person.setCreatedAt(null); // auto generated.
 
@@ -224,5 +225,10 @@ public class PersonServiceImpl implements PersonService {
         LOGGER.info("EKTELESTHKE TO GETPROFILEDATA");
         String mapUrl = this.addressPort.getStaticMap(addressResult.lat(),addressResult.lon());
         return new PersonProfileDTO(person, addressResult,mapUrl);
+    }
+
+    @Override
+    public List<Person> findOwners() {
+        return this.personRepository.findByType(PersonType.OWNER);
     }
 }

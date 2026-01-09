@@ -63,6 +63,16 @@ public class InitializationService {
         this.clientRepository.saveAll(clientList);
         final List<CreatePersonRequest> createPersonRequestList = List.of(
             new CreatePersonRequest(
+                PersonType.ADMIN,
+                "admin01",
+                "Argyris",
+                "Pap",
+                "admin@hua.gr",
+                "+306911111111",
+                "1234",
+                "Ελ. Βενιζέλου 70 Καλλιθέα"
+            ),
+            new CreatePersonRequest(
                 PersonType.OWNER,
                 "t0001",
                 "Dimitris",
@@ -106,24 +116,6 @@ public class InitializationService {
         for (final var createPersonRequest : createPersonRequestList) {
             this.personService.createPerson(createPersonRequest, false); // do not send SMS
         }
-        /*
-        PersonLocation personLocation = new PersonLocation();
-        personLocation.setId(null);
-        personLocation.setZipCode(18900);
-        personLocation.setStreet("Epidaurou");
-        personLocation.setStreetNumber("125");
-        personLocation.setCity("Peristeri");
-        personLocation.setState("ATTIKH");
-
-
-
-        Person person = this.personRepository.findByHuaId("t0001").orElse(null);
-        personLocation.setPerson(person);
-        //System.out.println ("========before=======");
-        //System.out.println(person.toString());
-        this.personService.addLocationToPerson("t0001",personLocation);
-        */
         LOGGER.info("Database initialization completed successfully.");
-        //this.addressPortImpl.findAdress("Πατησιων 76 Αθηνα");
     }
 }
