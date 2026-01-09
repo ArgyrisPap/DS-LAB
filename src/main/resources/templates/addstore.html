@@ -24,13 +24,13 @@
 
         <div class="mb-3">
             <label class="form-label">Store Name</label>
-            <input type="text" th:field="*{storeName}" class="form-control" placeholder="Example: To Souvlaki tou HUA" required />
+            <input type="text" th:field="*{storeName}" class="form-control" placeholder="Η καντίνα του HUA" required />
             <p class="text-danger small" th:if="${#fields.hasErrors('storeName')}" th:errors="*{storeName}"></p>
         </div>
 
         <div class="mb-3">
             <label class="form-label">Address</label>
-            <input type="text" th:field="*{storeAddress}" class="form-control" placeholder="Street Name Number City" required />
+            <input type="text" th:field="*{storeAddress}" class="form-control" placeholder="Οδος Νουμερο Περιοχη" required />
             <p class="text-danger small" th:if="${#fields.hasErrors('storeAddress')}" th:errors="*{storeAddress}"></p>
         </div>
 
@@ -45,7 +45,7 @@
 
         <div class="mb-3">
             <label class="form-label">Store Phone Number</label>
-            <input type="tel" th:field="*{phoneNumber}" class="form-control" placeholder="Example: 2101234567" required />
+            <input type="tel" th:field="*{phoneNumber}" class="form-control" placeholder="Πραγματικό κινητό τηλέφωνο αλλιώς error" required />
             <p class="text-danger small" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></p>
         </div>
 

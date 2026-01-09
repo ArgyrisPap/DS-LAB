@@ -233,7 +233,7 @@ public class OrderServiceImpl implements OrderService {
 
         }else if(currentUser.type() == PersonType.OWNER){
             //BRISKW POIO MAGAZI EXEI O OWNER
-
+            //ΔΕΝ ΜΑΣ ΕΝΟΧΛΕΙ ΠΟΥ Ο OWNER ΒΛΕΠΕΙ ΚΑΙ ΤΑ DENIED ORDER. ΑΝ ΘΕΛΟΥΜΕ ΑΛΛΑΖΕΙ ΕΥΚΟΛΑ
 
             long id = currentUser.id();
             List <Store> stores=this.storeRepository.findStoresByOwnerId(id);
