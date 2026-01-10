@@ -37,6 +37,8 @@ app:
       audience: "external-systems"
       secret: "${JWT_SECRET:Uh0WvRj5qs2sChP0dwTkky/VoudWSk0FVikEDDUKdRU=}" # openssl rand -base64 32
       ttl-minutes: 60
+    phone:
+      testing: ${PHONE_TESTING}
 server:
   address: 0.0.0.0
   port: 8080

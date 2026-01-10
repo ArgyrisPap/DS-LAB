@@ -9,7 +9,9 @@ import gr.hua.dit.steetfood.core.model.Person;
 import gr.hua.dit.steetfood.core.model.PersonType;
 import gr.hua.dit.steetfood.core.model.Store;
 import gr.hua.dit.steetfood.core.port.AddressPort;
+import gr.hua.dit.steetfood.core.port.PhoneNumberPort;
 import gr.hua.dit.steetfood.core.port.RoutePort;
+import gr.hua.dit.steetfood.core.port.SmsNotificationPort;
 import gr.hua.dit.steetfood.core.port.impl.dto.AddressResult;
 import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.repository.OrderRepository;
@@ -47,7 +49,9 @@ import java.util.Optional;
 @Service
 public class OrderServiceImpl implements OrderService {
     private static final Logger LOGGER = LoggerFactory.getLogger(OrderServiceImpl.class);
-    private final boolean fakeEmail = true; //TODO για να στελνονται τα εμαιλ μονο σε δικο μου email
+    private final boolean testing = true; //TODO για να στελνονται τα εμαιλ μονο σε δικο μου email
+    @Value("${app.phone.testing}")
+    private  String personalPhone ; //TODO για να στελνονται τα sms μονο σε δικο μου κινητο
     @Value("${app.email.enabled}")
     private boolean emailEnabled;
 
@@ -60,6 +64,8 @@ public class OrderServiceImpl implements OrderService {
     private final EmailService emailService;
     private final RoutePort routePort;
     private final AddressPort addressPort;
+    private final SmsNotificationPort smsNotificationPort;
+    private final PhoneNumberPort phoneNumberPort;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             PersonRepository personRepository,
@@ -69,7 +75,9 @@ public class OrderServiceImpl implements OrderService {
                             FoodItemMapper foodItemMapper,
                             EmailService emailService,
                             RoutePort routePort,
-                            AddressPort addressPort) {
+                            AddressPort addressPort,
+                            SmsNotificationPort smsNotificationPort,
+                            PhoneNumberPort phoneNumberPort) {
         if (orderRepository == null) throw new NullPointerException();
         if (personRepository == null) throw new NullPointerException();
         if (storeRepository == null) throw new NullPointerException();
@@ -79,6 +87,8 @@ public class OrderServiceImpl implements OrderService {
         if  (emailService == null) throw new NullPointerException();
         if (routePort == null ) throw new NullPointerException();
         if (addressPort == null) throw new NullPointerException();
+        if (smsNotificationPort == null) throw new NullPointerException();
+        if (phoneNumberPort == null )throw new NullPointerException();
 
         this.currentUserProvider = currentUserProvider;
         this.orderMapper = orderMapper;
@@ -89,6 +99,8 @@ public class OrderServiceImpl implements OrderService {
         this.emailService = emailService;
         this.routePort= routePort;
         this.addressPort = addressPort;
+        this.smsNotificationPort = smsNotificationPort;
+        this.phoneNumberPort = phoneNumberPort;
     }
 
     @Override
@@ -194,7 +206,6 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setPriceAtOrder(foodItem.getPrice() * itemIdQ);
             totalPrice += foodItem.getPrice() * itemIdQ;
             order.getOrderItems().add(orderItem);
-            //orderItems.add(orderItem); //TODO NA MHN TO KANV ME .ADD
         }
         LOGGER.info("TOTAL PRICE OF ORDER IS="+totalPrice);
         //=======LAST BUSINESS RULE
@@ -345,6 +356,7 @@ public class OrderServiceImpl implements OrderService {
 
         return Optional.of(routeInfo);
     }
+    //ΟΥΣΙΑΣΤΙΚΑ ΕΙΝΑΙ FUNCTION ΓΙΑ ΑΛΛΑΓΗ ΚΑΤΑΣΤΑΣΗΣ ΠΑΡΑΓΓΕΛΙΑΣ (ΜΕΛΛΟΝΤΙΚΑ ΕΠΕΚΤΑΣΙΜΟ)
     private OrderView matchesOwner (StartOrderRequest startOrderRequest, OrderStatus statusToAchieve){
         if (statusToAchieve == null) throw new NullPointerException();
         if (startOrderRequest == null) throw new NullPointerException();
@@ -359,6 +371,7 @@ public class OrderServiceImpl implements OrderService {
         final long storeId = order.getStore().getId();
         Store store = order.getStore();
         if (store == null) {throw new NullPointerException();} //pleonasmos - den tha einai null logw @NotNull se Order
+        if (!store.isOpen()) throw new IllegalArgumentException("Store is closed, cant change status of any order!");
         Person owner = store.getOwner();
         if (owner == null) {throw new NullPointerException();}//pleonasmos - den tha einai null logw @NotNull se Store
 
@@ -380,6 +393,7 @@ public class OrderServiceImpl implements OrderService {
             if (order.getStatus() != OrderStatus.SENT_AT) throw new IllegalArgumentException("Only sent at order status can be started");
             order.setStatus(OrderStatus.IN_PROCESS);
             order.setInProgressAt(Instant.now());
+
         }
 
         if (statusToAchieve == OrderStatus.DENIED) {
@@ -388,6 +402,7 @@ public class OrderServiceImpl implements OrderService {
             order.setDeniedAt(Instant.now());
             //TSET METHOD TO SET DELETED STATUS IN 5 MINUTES
             order.setVisibleUntil(Instant.now().plus(2, ChronoUnit.MINUTES));
+
 
         }
 
@@ -399,25 +414,33 @@ public class OrderServiceImpl implements OrderService {
         final OrderView orderView = this.orderMapper.convertOrderToOrderView(savedOrder);
 
         //find person's email who ordered
-        String to;
+        String to,phoneNumber;
+        boolean validPhone;
         if (emailEnabled) {
-            if (fakeEmail) {
+            if (testing) {
                 to = "arg.papa97@gmail.com"; //testing!
+                phoneNumber=personalPhone; //testing!
+                validPhone= true;
             } else {
                 to = order.getPerson().getEmailAddress();
+                phoneNumber= order.getPerson().getMobilePhoneNumber();
+                validPhone= this.phoneNumberPort.validate(phoneNumber).isValidMobile();
             }
 
             if (to == null) {
                 throw new IllegalArgumentException();
             } // @NOT NULL IN ENTITY PERSON!
 
-            if (statusToAchieve == OrderStatus.DENIED) {
-                this.emailService.sendOrderDeniedEmail(to, orderId);
-            } else if (statusToAchieve == OrderStatus.IN_PROCESS) {
+            if (statusToAchieve == OrderStatus.IN_PROCESS) {
                 this.emailService.sendOrderStartEmail(to, orderId);
+                if (validPhone) this.smsNotificationPort.sendSms(phoneNumber,"Your order has been Started");
+
+            }else if (statusToAchieve == OrderStatus.DENIED) {
+                this.emailService.sendOrderDeniedEmail(to, orderId);
+                if (validPhone) this.smsNotificationPort.sendSms(phoneNumber,"Your order has been Denied");
             }
         }else {
-            LOGGER.info("EMAIL LOGIC SKIPPED!");
+            LOGGER.info("EMAIL/SMS LOGIC SKIPPED!. SET emailEnabled var == true in yml (for localhost) to enable emails");
         }
 
         return orderView;

@@ -28,6 +28,7 @@ public class SmsNotificationPortImpl implements SmsNotificationPort {
         this.restTemplate = restTemplate;
     }
 
+
     @Override
     public boolean sendSms(final String e164, final String content) {
         if (e164 == null) throw new NullPointerException();

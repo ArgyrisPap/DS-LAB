@@ -8,7 +8,7 @@ Clone the repository:
 
 ```shell
 git clone https://github.com/ArgyrisPap/noc-service.git
-(inside noc file:)./mvnw spring-boot:run
+(inside noc file run:)./mvnw spring-boot:run
 
 ----------------------------------------------
 
@@ -19,8 +19,10 @@ sudo apt install docker.io docker-compose -y
 ------------------------------
 
 git clone https://github.com/ArgyrisPap/DS-LAB.git
-chmod +x deploy.sh
-./deploy.sh
+(inside DS-LAB file run:) chmod +x deploylocal.sh
+cp .envexample .env
+nano .env (and enter your credentials)
+./deploylocal.sh
 
 STOP StreetFoodGO USING:
 sudo docker-compose down
