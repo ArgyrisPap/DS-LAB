@@ -48,7 +48,7 @@ public class Store {
     private String storeName;
 
     //@NotNull
-    @Column(name = "store_address", nullable = false, length = 30)
+    @Column(name = "store_address", nullable = false, length = 50)
     private String storeAddress;
 
     @Enumerated(EnumType.STRING)

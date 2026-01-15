@@ -33,7 +33,7 @@ public class PersonResource {
         this.personService = personService;
     }
 
-    @PreAuthorize("hasRole('INTEGRATION_READ')")
+    @PreAuthorize("hasRole('INTEGRATION_WRITE')")
     @PostMapping("")
     public ResponseEntity<?> register(@Valid @RequestBody CreatePersonRequest request) {
         if (request.type() != PersonType.OWNER)return ResponseEntity.badRequest().body("This endpoint only allows OWNER registration.");

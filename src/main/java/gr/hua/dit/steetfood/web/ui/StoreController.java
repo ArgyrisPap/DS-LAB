@@ -97,12 +97,16 @@ public class StoreController {
                                      final BindingResult bindingResult,
                                      final Model model){
         if (bindingResult.hasErrors()) {
+            model.addAttribute("storeTypes", StoreType.values());
+            model.addAttribute("owners", this.personService.findOwners());
             return "addstore";
         }
 
         final CreateStoreResult createStoreResult = storeService.createStore(createStoreRequest);
         if (!createStoreResult.created()){
-            LOGGER.info("ΔΕΝ ΦΤΙΑΧΤΗΚΕ ΤΟ ΜΑΓΑΖΙ!");
+            LOGGER.info("ΔΕΝ ΦΤΙΑΧΤΗΚΕ ΤΟ ΜΑΓΑΖΙ!EPEIDH:"+createStoreResult.reason());
+            model.addAttribute("storeTypes", StoreType.values());
+            model.addAttribute("owners", this.personService.findOwners());
             model.addAttribute ("createStoreRequest", createStoreRequest);
             model.addAttribute ("errorMessage", createStoreResult.reason());
             return "addstore";

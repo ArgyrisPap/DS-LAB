@@ -152,15 +152,18 @@ public class StoreServiceImpl implements StoreService {
         if (this.storeRepository.existsByStoreAddress(storeAddress)) {
             return CreateStoreResult.fail("Store with address:"+storeAddress+" already exists");
         }
-        if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
-            return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
-        }
+
         final PhoneNumberValidationResult phoneNumberValidationResult
             = this.phoneNumberPort.validate(storePhoneNumber);
         if (!phoneNumberValidationResult.isValidMobile()) {
             return CreateStoreResult.fail("Mobile Phone Number is not valid");
         }
         storePhoneNumber = phoneNumberValidationResult.e164();
+        LOGGER.info("PRIN TO PHONE VALIDATION");
+        if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
+            LOGGER.info("MESA TO PHONE VALIDATION");
+            return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
+        }
 
         Store store= new Store();
         store.setStoreId(null);
