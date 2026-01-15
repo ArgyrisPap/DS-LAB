@@ -4,6 +4,10 @@ import gr.hua.dit.steetfood.config.RestApiClientConfig;
 import gr.hua.dit.steetfood.core.port.AddressPort;
 import gr.hua.dit.steetfood.core.port.impl.dto.AddressResult;
 
+import gr.hua.dit.steetfood.core.service.impl.OrderServiceImpl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -14,6 +18,7 @@ import java.util.Optional;
 @Service
 public class AddressPortImpl implements AddressPort {
     private final RestTemplate restTemplate;
+    private static final Logger LOGGER = LoggerFactory.getLogger(AddressPortImpl.class);
 
     @Value("${geocoding.api.key}")
     private  String geocodingApiKey;
@@ -39,7 +44,7 @@ public class AddressPortImpl implements AddressPort {
             restTemplate.getForEntity(url, AddressResult[].class);
 
         if (response.getBody() == null || response.getBody().length == 0) {
-            System.out.println(url);
+            LOGGER.warn("ADDRESS NOT FOUND! RETURNING EMPTY ADDRESS RESULT");
             return Optional.empty();
             //throw new RuntimeException("Address not found");
         }

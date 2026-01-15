@@ -20,10 +20,13 @@ import gr.hua.dit.steetfood.core.service.model.PersonView;
 
 import jakarta.transaction.Transactional;
 
+import jakarta.validation.Valid;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 
 import java.util.ArrayList;
 import java.util.List;

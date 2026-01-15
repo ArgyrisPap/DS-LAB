@@ -147,14 +147,14 @@ public class StoreServiceImpl implements StoreService {
         final double minOrder = createStoreRequest.minOrder();
         final Long ownerId = createStoreRequest.ownerId();
 
-    //TODO ONLY FOR ADMIN OF SITE
+        //TODO ONLY FOR ADMIN OF SITE
         /**/
-         if (this.storeRepository.existsByStoreAddress(storeAddress)) {
-             return CreateStoreResult.fail("Store with address:"+storeAddress+" already exists");
-         }
-         if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
-             return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
-         }
+        if (this.storeRepository.existsByStoreAddress(storeAddress)) {
+            return CreateStoreResult.fail("Store with address:"+storeAddress+" already exists");
+        }
+        if (this.storeRepository.existsByPhoneNumber(storePhoneNumber)){
+            return CreateStoreResult.fail("Phone number with address:"+storePhoneNumber+" already exists");
+        }
         final PhoneNumberValidationResult phoneNumberValidationResult
             = this.phoneNumberPort.validate(storePhoneNumber);
         if (!phoneNumberValidationResult.isValidMobile()) {
@@ -162,18 +162,30 @@ public class StoreServiceImpl implements StoreService {
         }
         storePhoneNumber = phoneNumberValidationResult.e164();
 
-         Store store= new Store();
-         store.setStoreId(null);
-         store.setStoreName(storeName);
-         store.setStoreAddress(storeAddress);
-         store.setStoreType(storeType);
-         store.setPhoneNumber(storePhoneNumber);
-         store.setMinOrder(minOrder);
-         store.setFoodItemList(new ArrayList<FoodItem>());
-         store.setOpen(false); //ALWAYS FALSE AT START
-         store.setOwner(owner);
+        Store store= new Store();
+        store.setStoreId(null);
+        store.setStoreName(storeName);
+        store.setStoreAddress(storeAddress);
+        store.setStoreType(storeType);
+        store.setPhoneNumber(storePhoneNumber);
+        store.setMinOrder(minOrder);
+        store.setOpen(false); //ALWAYS FALSE AT START
+        store.setOwner(owner);
 
         store= this.storeRepository.save(store);
+        //store.setFoodItemList(new ArrayList<FoodItem>());
+        List<FoodItem> foodItemsList = new ArrayList<>();
+        FoodItem food1 = new FoodItem();
+        food1.setDescription("test product");
+        food1.setPrice(2.5);
+        food1.setCategory(FoodCategory.STARTER);
+        food1.setStore(store);
+        foodItemsList.add(food1);
+        FoodItem savedFood1= foodItemRepository.save(food1);
+
+
+
+        store.setFoodItemList(foodItemsList);
         return CreateStoreResult.success(createStoreRequest);
     }
 

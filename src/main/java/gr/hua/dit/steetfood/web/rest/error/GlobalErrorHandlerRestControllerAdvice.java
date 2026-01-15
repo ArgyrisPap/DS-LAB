@@ -19,7 +19,7 @@ import java.time.Instant;
 /**
  * Provides global error handling for the REST API (/api/**). Returns JSON instead of HTML pages.
  */
-@RestControllerAdvice(basePackages = "gr.hua.dit.officehours.web.rest")
+@RestControllerAdvice(basePackages = "gr.hua.dit.steetfood.web.rest")
 @Order(1)
 public class GlobalErrorHandlerRestControllerAdvice {
 

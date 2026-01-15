@@ -336,7 +336,12 @@ public class OrderServiceImpl implements OrderService {
         String storeAddress= orderView.store().storeAddress();
         if (storeAddress == null) return Optional.empty();
         String storeAddressFormated = String.join("+", storeAddress.trim().split("\\s+"));
-        AddressResult storeAddressResult = this.addressPort.findAdress(storeAddressFormated).orElseThrow();
+        AddressResult storeAddressResult = this.addressPort.findAdress(storeAddressFormated).orElse(null);
+        if (storeAddressResult == null) {
+            LOGGER.warn("COULD NOT FIND STORE'S ADDRESS. RETURNING EMPTY ROUTE INFO");
+            return Optional.empty();
+        }
+
         LOGGER.info("STORE ADDRESS!");
         LOGGER.info("LAT="+storeAddressResult.lat()+"\nLON="+storeAddressResult.lon()+"\n=====================");
 
@@ -344,7 +349,11 @@ public class OrderServiceImpl implements OrderService {
         //extract person Address
         String personAddress = orderView.client().rawAddress();
         String personAddressFormated = String.join("+", personAddress.trim().split("\\s+"));
-        AddressResult personAddressResult = this.addressPort.findAdress(personAddressFormated).orElseThrow();
+        AddressResult personAddressResult = this.addressPort.findAdress(personAddressFormated).orElse(null);
+        if (personAddressResult == null) {
+            LOGGER.warn("COULD NOT FIND PERSON'S ADDRESS. RETURNING EMPTY ROUTE INFO");
+            return Optional.empty();
+        }
 
         LOGGER.info("PERSON ADDRESS!");
         LOGGER.info("LAT="+personAddressResult.lat()+"\nLON="+personAddressResult.lon()+"\n=====================");

@@ -31,7 +31,6 @@ public class OrderResource {
     @GetMapping("")
     public List<OrderView> orders() {
         final List<OrderView> orderViewList = this.orderDataService.getAllOrders();
-        //System.out.println("DELETE ME:"+orderViewList); //DELETE
         return orderViewList;
     }
 }

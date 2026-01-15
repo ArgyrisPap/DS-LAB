@@ -6,6 +6,9 @@ import gr.hua.dit.steetfood.core.service.model.StoreView;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 public class StoreMapper {
 
@@ -14,7 +17,22 @@ public class StoreMapper {
             store.getStoreId(),
             store.getStoreName(),
             store.getStoreAddress(),
-            store.getPhoneNumber()
+            store.getStoreType(),
+            store.getPhoneNumber(),
+            store.isOpen(),
+            store.getMinOrder(),
+            store.getFoodItemList()
         );
+    }
+
+    public List<StoreView> convertStoresToStoreView (List<Store> stores){
+
+
+        ArrayList<StoreView> storeViewList= new ArrayList<>();
+        if (stores== null || stores.isEmpty()) return storeViewList;
+        for (Store store : stores){
+            storeViewList.add(this.convertStoreToStoreView(store));
+        }
+        return storeViewList;
     }
 }

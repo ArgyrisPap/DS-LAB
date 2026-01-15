@@ -28,7 +28,7 @@
     <ul class="mb-4">
         <li>Status: <b th:text="${order.status()}"></b></li>
         <li>User: <b th:text="${order.client().fullName()}"></b></li>
-        <li>Teacher: <b th:text="${order.store().storeName()}"></b></li>
+        <li>Store Name: <b th:text="${order.store().storeName()}"></b></li>
         <li>Queued at: <b th:text="${order.creatingDate()}"></b></li>
 
         <li th:if="${order.inProgressAt() != null}">In progress at: <b th:text="${order.inProgressAt()}"></b></li>
@@ -60,6 +60,9 @@
     <li th:if="${routeInfo != null}">
         Estimated route duration:
         <b th:text="${routeInfo.durationMinutes()}"></b> minutes
+    </li>
+    <li th:if="${routeInfo == null && order.status().name() == 'IN_PROCESS' && order.type().name() == 'DELIVERY'}">
+        Could not find estimated route duration!
     </li>
 
     <!-- Store actions -->

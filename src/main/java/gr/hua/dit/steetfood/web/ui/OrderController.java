@@ -8,11 +8,13 @@ import gr.hua.dit.steetfood.core.port.impl.dto.RouteInfo;
 import gr.hua.dit.steetfood.core.security.CurrentUserProvider;
 import gr.hua.dit.steetfood.core.service.OrderService;
 import gr.hua.dit.steetfood.core.service.StoreService;
+import gr.hua.dit.steetfood.core.service.mapper.StoreMapper;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderFormReq;
 import gr.hua.dit.steetfood.core.service.model.CreateOrderRequest;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 import gr.hua.dit.steetfood.core.service.model.OrderView;
 import gr.hua.dit.steetfood.core.service.model.StartOrderRequest;
+import gr.hua.dit.steetfood.core.service.model.StoreView;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -40,27 +42,30 @@ public class OrderController {
     private final OrderService orderService;
     private final StoreService storeService;
     private final CurrentUserProvider  currentUserProvider;
+    private final StoreMapper storeMapper;
 
     public OrderController(final StoreService storeService,final OrderService orderService,
-                           final CurrentUserProvider currentUserProvider) {
+                           final CurrentUserProvider currentUserProvider,
+                           final StoreMapper storeMapper) {
         this.orderService = orderService;
         this.storeService = storeService;
         this.currentUserProvider = currentUserProvider;
+        this.storeMapper = storeMapper;
     }
 
     @GetMapping("/store/{id}/menu")
     public String showStoreMenu(@PathVariable Long id, Model model) {
         if (id == null) throw new NullPointerException();
-        Store store = storeService.getStoreById(id).orElse(null);
-        if (store == null) {
+        Store str = storeService.getStoreById(id).orElse(null);
+        if (str == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found");
             //model.addAttribute("errorMessage", "Store not found");
             //return "redirect:/login";
         }
-
+        StoreView store= this.storeMapper.convertStoreToStoreView(str);
         model.addAttribute("store", store);
-        List<FoodItem> menuItems = store.getFoodItemList();
-
+        //List<FoodItem> menuItems = store.getFoodItemList();
+        List<FoodItem> menuItems = store.foodItemList();
         if (menuItems == null) {
             menuItems = new ArrayList<>();  // Κενή λίστα αν δεν υπάρχει
         }
@@ -84,12 +89,12 @@ public class OrderController {
         Long storeId = id;
         LOGGER.info("store id is {}, editOrderId is {}", storeId, editOrderId);
 
-        final Store store = storeService.getStoreById(storeId).orElse(null);
-        if (store == null) {
+        final Store str = storeService.getStoreById(storeId).orElse(null);
+        if (str == null) {
             throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found");
         }
-
-        if (!store.isOpen()) {
+        StoreView store = this.storeMapper.convertStoreToStoreView(str);
+        if (!store.open()) {
             LOGGER.warn("REDIRECTING FOR: CLOSED STORE TO STORE MENU ONLY");
             return "redirect:/store/" + id + "/menu";
         }

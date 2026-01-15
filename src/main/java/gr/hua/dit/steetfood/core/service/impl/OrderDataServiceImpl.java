@@ -8,6 +8,8 @@ import gr.hua.dit.steetfood.core.service.mapper.OrderMapper;
 
 import gr.hua.dit.steetfood.core.service.model.OrderView;
 
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -28,7 +30,7 @@ public class OrderDataServiceImpl implements OrderDataService {
         this.orderRepository = orderRepository;
         this.orderMapper = orderMapper;
     }
-
+    @Transactional
     @Override
     public List<OrderView> getAllOrders() {
         final List<Order> ticketList = this.orderRepository.findAll();

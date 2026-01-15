@@ -9,9 +9,11 @@ import gr.hua.dit.steetfood.core.model.StoreType;
 import gr.hua.dit.steetfood.core.service.PersonService;
 import gr.hua.dit.steetfood.core.service.StoreService;
 
+import gr.hua.dit.steetfood.core.service.mapper.StoreMapper;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreRequest;
 import gr.hua.dit.steetfood.core.service.model.CreateStoreResult;
 
+import gr.hua.dit.steetfood.core.service.model.StoreView;
 import jakarta.validation.Valid;
 
 import org.slf4j.Logger;
@@ -37,20 +39,25 @@ public class StoreController {
 
     private final StoreService storeService;
     private final PersonService personService;
+    private final StoreMapper storeMapper;
     private static final Logger LOGGER = LoggerFactory.getLogger(StoreController.class);
 
     public StoreController(final StoreService storeService,
-                           final PersonService personService) {
+                           final PersonService personService,
+                           final StoreMapper storeMapper) {
         if (storeService == null) {throw new NullPointerException();}
         if (personService == null) {throw new NullPointerException();}
+        if (storeMapper == null) {throw new NullPointerException();}
         this.storeService = storeService;
         this.personService = personService;
+        this.storeMapper = storeMapper;
     }
 
     @GetMapping("/showstores")
     public String showStore(Model model){
-        List<Store> stores = this.storeService.getAllStores();
-        //initial data for the form
+        //List<Store> stores = this.storeService.getAllStores();
+        //TODO CONVERT TO STOREVIEW LIST
+        List<StoreView> stores = this.storeMapper.convertStoresToStoreView(this.storeService.getAllStores());
         model.addAttribute("stores",stores);
         return "showstores";
     }
@@ -58,7 +65,9 @@ public class StoreController {
     @PostMapping("/showstores")
     public String filterStores(@ModelAttribute("stores") final StoreType type, final Model model){
         if (type == null) return "showstores";
-        model.addAttribute("stores",this.storeService.findStoresByType(type));
+        List<StoreView> stores = this.storeMapper.convertStoresToStoreView(this.storeService.findStoresByType(type));
+        //model.addAttribute("stores",this.storeService.findStoresByType(type));
+        model.addAttribute("stores",stores);
         return "showstores";
     }
 
@@ -84,21 +93,23 @@ public class StoreController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping ("/addstore")
     public String handleAddStoreForm(final Authentication authentication,
-       @Valid @ModelAttribute("createStoreRequest") final CreateStoreRequest createStoreRequest,
-       final BindingResult bindingResult,
-       final Model model){
+                                     @Valid @ModelAttribute("createStoreRequest") final CreateStoreRequest createStoreRequest,
+                                     final BindingResult bindingResult,
+                                     final Model model){
         if (bindingResult.hasErrors()) {
             return "addstore";
         }
 
         final CreateStoreResult createStoreResult = storeService.createStore(createStoreRequest);
-        if (createStoreResult.created()){
-            LOGGER.info("FTIAXTHKE TO MAGAZI!");
-            return "redirect:/showstores";
+        if (!createStoreResult.created()){
+            LOGGER.info("ΔΕΝ ΦΤΙΑΧΤΗΚΕ ΤΟ ΜΑΓΑΖΙ!");
+            model.addAttribute ("createStoreRequest", createStoreRequest);
+            model.addAttribute ("errorMessage", createStoreResult.reason());
+            return "addstore";
+
         }
-        model.addAttribute ("createStoreRequest", createStoreRequest);
-        model.addAttribute ("errorMessage", createStoreResult.reason());
-        return "/addstore";
+
+        return "redirect:/showstores";
 
     }
     @PreAuthorize("hasRole('OWNER')")
@@ -108,7 +119,8 @@ public class StoreController {
         if (!AuthUtils.isAuthenticated(authentication)){
             return "redirect:/profile";
         }
-        List <Store> stores = this.storeService.findMyStores();
+        //List <Store> stores = this.storeService.findMyStores();
+        List <StoreView> stores = this.storeMapper.convertStoresToStoreView(this.storeService.findMyStores());
 
 
         model.addAttribute ("stores",stores);
@@ -126,8 +138,9 @@ public class StoreController {
             LOGGER.warn("REDIRECTING UNAUTHORIZED TO LOGIN");
             return "redirect:/login";
         }
-        Store store = this.storeService.isOwnerOfStore(id).orElse(null);
-        if (store==null) throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found or not owned");
+        Store str = this.storeService.isOwnerOfStore(id).orElse(null);
+        if (str==null) throw new ResponseStatusException(HttpStatusCode.valueOf(404), "Store not found or not owned");
+        StoreView store = this.storeMapper.convertStoreToStoreView(str);
         final List<FoodItem> menuItems = this.storeService.getFoodItemListByStoreId(id);
 
         if (menuItems.isEmpty()) {
