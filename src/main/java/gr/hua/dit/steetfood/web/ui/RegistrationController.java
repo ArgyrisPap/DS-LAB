@@ -45,7 +45,7 @@ public class RegistrationController {
     @PostMapping("/register")
     public String handleFormSubmission(final Authentication authentication,
                                        @Valid @ModelAttribute("createPersonRequest") final CreatePersonRequest createPersonRequest,
-                                       final BindingResult bindingResult, // IMPORTANT: BindingResult **MUST** come immediately after the @Valid argument!
+                                       final BindingResult bindingResult, // IMPORTANT:BindingResult **MUST** come immediately after the @Valid argument!
                                        final Model model
     ) {
         if (AuthUtils.isAuthenticated(authentication)) {
