@@ -1,3 +1,62 @@
+
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Home</title>
+</head>
+
+<body>
+<header layout:fragment="header" class="text-start">
+    <div class="d-flex flex-column gap-2">
+        <span class="badge rounded-pill text-bg-danger align-self-start px-3 py-2">Street Food GO</span>
+        <h1 class="fw-bold mb-0">Παράγγειλε campus delivery σε λίγα λεπτά</h1>
+        <p class="text-secondary mb-0">Μοντέρνο ordering εμπνευσμένο από εμπειρία e-food, προσαρμοσμένο για φοιτητές και καθηγητές.</p>
+    </div>
+</header>
+
+<section layout:fragment="main">
+    <div class="rounded-4 p-4 p-md-5 mb-4 text-white" style="background: linear-gradient(135deg, #ff4d4f, #ff7a45);">
+        <h2 class="fw-bold mb-3">Βρες το αγαπημένο σου κατάστημα</h2>
+        <p class="mb-4">Hot προσφορές, γρήγορη εξυπηρέτηση και live ενημέρωση για κάθε παραγγελία.</p>
+        <div class="d-flex flex-wrap gap-2">
+            <a th:href="@{/showstores}" class="btn btn-light fw-semibold px-4">Προβολή καταστημάτων</a>
+            <a th:href="@{/register}" class="btn btn-outline-light fw-semibold px-4">Δημιουργία λογαριασμού</a>
+        </div>
+    </div>
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-md-4">
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+                <h6 class="fw-bold">⚡ Γρήγορο checkout</h6>
+                <p class="small text-secondary mb-0">Απλή ροή, χωρίς περιττά βήματα.</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+                <h6 class="fw-bold">📍 Έξυπνη τοποθεσία</h6>
+                <p class="small text-secondary mb-0">Παράδοση στη σχολή ή στο σπίτι σου.</p>
+            </div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="border rounded-4 p-3 h-100 bg-light-subtle">
+                <h6 class="fw-bold">🔔 Live updates</h6>
+                <p class="small text-secondary mb-0">Ξέρεις πάντα πού βρίσκεται η παραγγελία σου.</p>
+            </div>
+        </div>
+    </div>
+    <div class="text-center">
+        <p class="mb-2"><a th:href="@{/login}" class="btn btn-danger px-4">Σύνδεση</a></p>
+        <p class="mb-0 text-secondary small">Νέος χρήστης; <a th:href="@{/register}">Κάνε εγγραφή</a></p>
+    </div>
+
+</section>
+
+</body>
+</html>
+<!--
 <!DOCTYPE html>
 <html
     xmlns:th="https://www.thymeleaf.org"
@@ -36,3 +95,4 @@
 
 </body>
 </html>
+-->

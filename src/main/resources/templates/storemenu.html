@@ -1,3 +1,54 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="'Menu of ' + ${store.storeName}">Store Menu</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f6f8fb;
+            color: #1f2937;
+        }
+        .menu-card {
+            border: 0;
+            border-radius: 18px;
+            box-shadow: 0 8px 22px rgba(17, 24, 39, 0.08);
+            transition: transform .2s ease;
+        }
+        .menu-card:hover { transform: translateY(-3px); }
+        .price { color: #16a34a; font-weight: 700; }
+    </style>
+</head>
+<body>
+<div class="container py-4 py-md-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h1 class="fw-bold mb-1" th:text="'Menu of ' + ${store.storeName}">Store Menu</h1>
+            <p class="text-secondary mb-0">Διάλεξε προϊόντα και συνέχισε στην παραγγελία.</p>
+        </div>
+        <a href="/showstores" class="btn btn-outline-dark rounded-3">Back to Stores</a>
+    </div>
+
+    <div class="row g-3" th:if="${menuItems != null and !#lists.isEmpty(menuItems)}">
+        <div class="col-12 col-md-6 col-lg-4" th:each="item : ${menuItems}">
+            <div class="card menu-card h-100">
+                <div class="card-body">
+                    <h5 class="fw-bold" th:text="${item.description}">Description</h5>
+                    <p class="price mb-2" th:text="${'€' + item.price}">Price</p>
+                    <span class="badge text-bg-light border" th:text="${item.category}">Category</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:if="${menuItems == null or #lists.isEmpty(menuItems)}" class="alert alert-secondary rounded-4 mb-0">
+        Δεν υπάρχουν διαθέσιμα items αυτή τη στιγμή.
+    </div>
+</div>
+</body>
+</html>
+
+<!--
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -88,3 +139,4 @@
 
 </body>
 </html>
+-->

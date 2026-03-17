@@ -1,3 +1,34 @@
+
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Logout</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1 class="fw-bold">Θέλεις να αποσυνδεθείς;</h1>
+    <p class="text-secondary mb-0">Μπορείς να επιστρέψεις οποιαδήποτε στιγμή.</p>
+</header>
+
+<section layout:fragment="main">
+    <form th:action="@{/logout}" method="post" class="rounded-4 border p-4 bg-body-tertiary text-center">
+        <div class="mb-3">
+            <button type="submit" class="btn btn-danger btn-lg rounded-3 px-5">Log out</button>
+        </div>
+        <p class="mb-0"><a th:href="@{/profile}" class="fw-semibold">Επιστροφή στο προφίλ</a></p>
+    </form>
+
+</section>
+
+</body>
+</html>
+<!--
 <!DOCTYPE html>
 <html
     xmlns:th="https://www.thymeleaf.org"
@@ -28,3 +59,4 @@
 
 </body>
 </html>
+-->

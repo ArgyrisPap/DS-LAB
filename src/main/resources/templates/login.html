@@ -1,3 +1,54 @@
+
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Login</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1 class="fw-bold">Welcome back </h1>
+    <p class="text-secondary mb-0">Συνδέσου για να συνεχίσεις την παραγγελία σου.</p>
+</header>
+
+<section layout:fragment="main">
+
+    <form th:action="@{/login}" method="post" class="rounded-4 border p-4 bg-body-tertiary">
+
+        <div class="text-center mb-3" th:if="${message}">
+            <p class="text-primary fw-semibold mb-0" th:text="${message}"></p>
+        </div>
+
+        <div class="text-center mb-3" th:if="${error}">
+            <p class="text-danger fw-semibold mb-0" th:text="${error}"></p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input name="username" type="text" class="form-control form-control-lg rounded-3" required autofocus placeholder="you@hua.gr">
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input name="password" type="password" class="form-control form-control-lg rounded-3" required placeholder="••••••••">
+        </div>
+        <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-danger btn-lg rounded-3">Log in</button>
+        </div>
+        <p class="text-center mb-0">Δεν έχεις λογαριασμό; <a th:href="@{/register}" class="fw-semibold">Register</a></p>
+
+    </form>
+
+</section>
+
+</body>
+</html>
+<!--
 <!DOCTYPE html>
 <html
     xmlns:th="https://www.thymeleaf.org"
@@ -18,17 +69,17 @@
 
     <form th:action="@{/login}" method="post">
 
-        <!-- MESSAGE -->
+
         <div class="text-center mb-3" th:if="${message}">
             <p class="text-primary" th:text="${message}"></p>
         </div>
 
-        <!-- ERROR MESSAGE -->
+
         <div class="text-center mb-3" th:if="${error}">
             <p class="text-danger" th:text="${error}"></p>
         </div>
 
-        <!-- FORM CONTROLS -->
+
         <div class="mb-3">
             <label class="form-label">Email</label>
             <input name="username" type="text" class="form-control" required autofocus>
@@ -51,3 +102,4 @@
 
 </body>
 </html>
+-->

@@ -167,11 +167,22 @@ public class OrderController {
     }
 
     @GetMapping("/orders")
-    public String list(final Model model) {
-        final List<OrderView> orderViewList = this.orderService.getOrders();
+    public String list(@RequestParam(name = "status", required = false) String status, Model model) {
+        List<OrderView> orderViewList;
+
+        // Αν το URL έχει ?status=active, κάλεσε το φίλτρο
+        if ("active".equals(status)) {
+            //TODO UELV NA GINETAI ELEGXOS OTI DEN EINAI USER!
+            orderViewList = this.orderService.filterOrders();
+        } else {
+            orderViewList = this.orderService.getOrders();
+        }
+
         model.addAttribute("orders", orderViewList);
+        model.addAttribute("currentFilter", status); // Το κρατάμε για να ξέρουμε ποιο κουμπί να δείξουμε
         return "orders";
     }
+
 
     @GetMapping("orders/{orderId}")
     public String detail(@PathVariable final Long orderId, final Model model) {
@@ -211,6 +222,13 @@ public class OrderController {
     public String handleDenyForm(@PathVariable final Long orderId) {
         final StartOrderRequest startOrderRequest = new StartOrderRequest(orderId);
         final OrderView orderView =this.orderService.denyOrder(startOrderRequest);
+        return "redirect:/orders/" + orderView.id();
+    }
+    @PreAuthorize("hasRole('OWNER')")
+    @PostMapping("orders/{orderId}/complete")
+    public String handleCompleteForm(@PathVariable final Long orderId) {
+        final StartOrderRequest startOrderRequest = new StartOrderRequest(orderId);
+        final OrderView orderView = this.orderService.completeOrder(startOrderRequest);
         return "redirect:/orders/" + orderView.id();
     }
 

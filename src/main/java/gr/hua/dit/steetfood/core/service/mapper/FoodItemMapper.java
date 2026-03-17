@@ -1,6 +1,8 @@
 package gr.hua.dit.steetfood.core.service.mapper;
 
 
+import gr.hua.dit.steetfood.core.model.FoodItem;
+import gr.hua.dit.steetfood.core.service.model.FoodItemView;
 import gr.hua.dit.steetfood.core.service.model.OrderItemRequest;
 
 import org.springframework.stereotype.Component;
@@ -24,4 +26,19 @@ public class FoodItemMapper {
         }
         return orderItemRequestList;
     }
+
+    public List <FoodItemView> convertFoodItemListToViewList (
+        List <FoodItem> foodItemList
+    ){
+        if (foodItemList == null ) throw new NullPointerException("foodItemList is null");
+        List <FoodItemView> foodItemViewList = new ArrayList<>();
+        for (FoodItem foodItem : foodItemList){
+            foodItemViewList.add(new FoodItemView(foodItem.getId(),
+                foodItem.getDescription(),foodItem.getPrice(),
+                foodItem.getCategory()));
+        }
+        return foodItemViewList;
+    }
+
+
 }

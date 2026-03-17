@@ -1,3 +1,132 @@
+<!--
+<!DOCTYPE html>
+<html
+    xmlns:th="https://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{base}">
+
+<head>
+    <title>Registration</title>
+</head>
+
+<body>
+
+<header layout:fragment="header">
+    <h1 class="fw-bold">Create account 🚀</h1>
+    <p class="text-secondary mb-0">Μπες στην εμπειρία Street Food GO με λίγα μόνο βήματα.</p>
+</header>
+-->
+<!--
+<section layout:fragment="main">
+    <form th:action="@{/register}" method="post" th:object="${createPersonRequest}" class="rounded-4 border p-4 bg-body-tertiary">
+        <div class="text-center mb-3" th:if="${errorMessage != null}">
+
+            <div class="text-center mb-3" th:if="${errorMessage != null}">
+                <p class="text-danger fw-semibold m-0 p-0" th:text="${errorMessage}"></p>
+            </div>
+
+            <input type="hidden" th:field="*{type}" value="USER" />
+
+            <div class="mb-3">
+                <label class="form-label">HUA ID</label>
+                <input type="text" name="huaId" th:field="*{huaId}" class="form-control form-control-lg rounded-3" placeholder="it2023001" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">First Name</label>
+                <input type="text" name="firstName" th:field="*{firstName}" class="form-control form-control-lg rounded-3" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Last Name</label>
+                <input type="text" name="lastName" th:field="*{lastName}" class="form-control form-control-lg rounded-3" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Address</label>
+                <input type="text" name="rawAddress" th:field="*{rawAddress}" class="form-control form-control-lg rounded-3" placeholder="StreetName Number City" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email Address</label>
+                <input type="email" name="emailAddress" th:field="*{emailAddress}" class="form-control form-control-lg rounded-3" required />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Mobile Phone Number</label>
+                <input type="tel" name="mobilePhoneNumber" th:field="*{mobilePhoneNumber}" class="form-control form-control-lg rounded-3" required />
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Password</label>
+                <input type="password" name="rawPassword" th:field="*{rawPassword}" class="form-control form-control-lg rounded-3" required />
+            </div>
+
+            <div class="d-grid mb-3">
+                <button type="submit" class="btn btn-danger btn-lg rounded-3">Register</button>
+            </div>
+
+            <p class="text-center m-0 p-0">Έχεις ήδη λογαριασμό; <a th:href="@{/login}" class="fw-semibold">Log in</a></p>
+        </div>
+    </form>
+
+</section>
+-->
+<!--
+<section layout:fragment="main">
+    <form th:action="@{/register}" method="post" th:object="${createPersonRequest}" class="rounded-4 border p-4 bg-body-tertiary">
+
+        <div class="text-center mb-3" th:if="${errorMessage != null}">
+            <p class="text-danger fw-semibold m-0 p-0" th:text="${errorMessage}"></p>
+        </div>
+
+        <input type="hidden" th:field="*{type}" value="USER" />
+
+        <div class="mb-3">
+            <label class="form-label">HUA ID</label>
+            <input type="text" th:field="*{huaId}" class="form-control form-control-lg rounded-3" placeholder="it2023001" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">First Name</label>
+            <input type="text" th:field="*{firstName}" class="form-control form-control-lg rounded-3" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Last Name</label>
+            <input type="text" th:field="*{lastName}" class="form-control form-control-lg rounded-3" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Address</label>
+            <input type="text" th:field="*{rawAddress}" class="form-control form-control-lg rounded-3" placeholder="StreetName Number City" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Email Address</label>
+            <input type="email" th:field="*{emailAddress}" class="form-control form-control-lg rounded-3" required />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Mobile Phone Number</label>
+            <input type="tel" th:field="*{mobilePhoneNumber}" class="form-control form-control-lg rounded-3" required />
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Password</label>
+            <input type="password" th:field="*{rawPassword}" class="form-control form-control-lg rounded-3" required />
+        </div>
+
+        <div class="d-grid mb-3">
+            <button type="submit" class="btn btn-danger btn-lg rounded-3">Register</button>
+        </div>
+
+        <p class="text-center m-0 p-0">Έχεις ήδη λογαριασμό; <a th:href="@{/login}" class="fw-semibold">Log in</a></p>
+    </form>
+</section>
+</body>
+</html>
+-->
 <!DOCTYPE html>
 <html
     xmlns:th="https://www.thymeleaf.org"
@@ -86,3 +215,4 @@
 
 </body>
 </html>
+

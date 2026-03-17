@@ -237,7 +237,7 @@ public class OrderServiceImpl implements OrderService {
             orderList = this.orderRepository.findAllByPersonId(currentUser.id())
                 .stream()
                 .filter(order ->
-                    order.getStatus() != OrderStatus.DENIED
+                    (order.getStatus() != OrderStatus.DENIED && order.getStatus() != OrderStatus.COMPLETED)
                         || order.getVisibleUntil() == null
                         || order.getVisibleUntil().isAfter(Instant.now())
                 ).toList();
@@ -267,6 +267,24 @@ public class OrderServiceImpl implements OrderService {
             .map(this.orderMapper::convertOrderToOrderView)
             .toList();
     }
+    //BRISKEI TA ORDERS, KAI KRATAEI MONO TA IN_PROCESS, SENT_AT
+    @Override
+    public List<OrderView> filterOrders() {
+        final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
+
+        List <Order> orderList= new ArrayList<>();
+        if (currentUser.type() == PersonType.USER) {
+            throw new SecurityException("User cannot use this button function"); //MONO OWNER
+
+        }else if(currentUser.type() == PersonType.OWNER){
+            return getOrders().stream().filter(order ->
+                order.status() == OrderStatus.IN_PROCESS
+                    || order.status() == OrderStatus.SENT_AT).toList();
+
+        }else {
+            throw new SecurityException("unsupported PersonType");
+        }
+    }
 
     @Override
     public Optional<OrderView> getOrder(Long orderId) {
@@ -274,19 +292,20 @@ public class OrderServiceImpl implements OrderService {
         if (orderId <= 0) throw new IllegalArgumentException();
 
         final CurrentUser currentUser = this.currentUserProvider.requireCurrentUser();
-
+        PersonType userType = currentUser.type();
         final Order order;
         try {
             order = this.orderRepository.getReferenceById(orderId);
         } catch (EntityNotFoundException ignored) {
             return Optional.empty();
         }
+        //ΔΕΝ ΤΑ ΕΜΦΑΝΙΖΕΙ ΜΟΝΟ ΓΙΑ ΤΟΝ USER
         if (order.getVisibleUntil()!= null &&
-            order.getVisibleUntil().isBefore(Instant.now())) throw new SecurityException("This order does not exist anymore");
+            order.getVisibleUntil().isBefore(Instant.now()) && userType == PersonType.USER) throw new SecurityException("This order does not exist anymore");
         final long orderPersonId;
-        if (currentUser.type() == PersonType.USER) {
+        if (userType == PersonType.USER) {
             orderPersonId = order.getPerson().getId();
-        }else if (currentUser.type() == PersonType.OWNER){
+        }else if (userType == PersonType.OWNER){
             //Briskw to store pou einai linked me to order. Kai briskw to id tou owner
             Store store = order.getStore();
             orderPersonId = store.getOwner().getId();
@@ -358,9 +377,13 @@ public class OrderServiceImpl implements OrderService {
         LOGGER.info("PERSON ADDRESS!");
         LOGGER.info("LAT="+personAddressResult.lat()+"\nLON="+personAddressResult.lon()+"\n=====================");
 
+        Double personLat = Double.parseDouble(personAddressResult.lat());
+        Double personLon = Double.parseDouble(personAddressResult.lon());
+        Double storeLat = Double.parseDouble(storeAddressResult.lat());
+        Double storeLon = Double.parseDouble(storeAddressResult.lon());
 
-        RouteInfo routeInfo = this.routePort.getRoute(storeAddressResult.lat(), storeAddressResult.lon(),personAddressResult.lat(),personAddressResult.lon());
-
+        //RouteInfo routeInfo = this.routePort.getRoute(storeAddressResult.lat(), storeAddressResult.lon(),personAddressResult.lat(),personAddressResult.lon());
+        RouteInfo routeInfo = this.routePort.getRoute(storeLat,storeLon,personLat,personLon);
         LOGGER.info("ROUTE INFO!!! DISTANCE="+routeInfo.distance()+" DURATION="+routeInfo.durationMinutes());
 
         return Optional.of(routeInfo);
@@ -369,7 +392,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderView matchesOwner (StartOrderRequest startOrderRequest, OrderStatus statusToAchieve){
         if (statusToAchieve == null) throw new NullPointerException();
         if (startOrderRequest == null) throw new NullPointerException();
-        if (statusToAchieve != OrderStatus.IN_PROCESS && statusToAchieve != OrderStatus.DENIED) throw new IllegalArgumentException("not yet implemented");
+        if (statusToAchieve != OrderStatus.IN_PROCESS && statusToAchieve != OrderStatus.DENIED
+                    && statusToAchieve!=OrderStatus.COMPLETED) throw new IllegalArgumentException("not yet implemented");
 
 
         Long orderId = startOrderRequest.id();
@@ -409,10 +433,15 @@ public class OrderServiceImpl implements OrderService {
             if (order.getStatus() != OrderStatus.SENT_AT) throw new IllegalArgumentException("Only sent at order status can be denied");
             order.setStatus(OrderStatus.DENIED);
             order.setDeniedAt(Instant.now());
-            //TSET METHOD TO SET DELETED STATUS IN 5 MINUTES
+            //TSET METHOD TO SET DELETED STATUS IN 2 MINUTES
             order.setVisibleUntil(Instant.now().plus(2, ChronoUnit.MINUTES));
-
-
+        }
+        if (statusToAchieve == OrderStatus.COMPLETED ) {
+            if (order.getStatus() != OrderStatus.IN_PROCESS) throw new IllegalArgumentException("Only in progress order status can be completed");
+            order.setStatus(OrderStatus.COMPLETED);
+            order.setCompletedAt(Instant.now());
+            //TSET METHOD TO SET DELETED STATUS IN 2 MINUTES
+            order.setVisibleUntil(Instant.now().plus(2, ChronoUnit.MINUTES));
         }
 
         //-------------------
@@ -421,7 +450,7 @@ public class OrderServiceImpl implements OrderService {
 
         final Order savedOrder = this.orderRepository.save(order);
         final OrderView orderView = this.orderMapper.convertOrderToOrderView(savedOrder);
-
+        System.out.println("NEW STATUS= "+orderView.status());
         //find person's email who ordered
         String to,phoneNumber;
         boolean validPhone;
@@ -439,7 +468,8 @@ public class OrderServiceImpl implements OrderService {
             if (to == null) {
                 throw new IllegalArgumentException();
             } // @NOT NULL IN ENTITY PERSON!
-
+            //TODO PREPEI NA GINEI TRY CATCH
+            System.out.println();
             if (statusToAchieve == OrderStatus.IN_PROCESS) {
                 this.emailService.sendOrderStartEmail(to, orderId);
                 if (validPhone) this.smsNotificationPort.sendSms(phoneNumber,"Your order has been Started");
@@ -458,6 +488,12 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderView denyOrder(@Valid StartOrderRequest startOrderRequest) {
         return this.matchesOwner(startOrderRequest, OrderStatus.DENIED);
+
+    }
+
+    @Override
+    public OrderView completeOrder(@Valid StartOrderRequest startOrderRequest) {
+        return this.matchesOwner(startOrderRequest, OrderStatus.COMPLETED);
 
     }
 }

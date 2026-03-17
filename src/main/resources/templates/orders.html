@@ -1,57 +1,88 @@
 <!DOCTYPE html>
-<html
-    xmlns:th="https://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{base}">
-
-<head>
-    <title>Orders</title>
-</head>
-
+<html xmlns:th="https://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{base}">
+<head><title>Orders</title></head>
 <body>
 
 <header layout:fragment="header">
-    <h1>Orders</h1>
+    <div class="d-flex justify-content-between align-items-end">
+        <div>
+            <h1 class="fw-bold mb-1">Orders Dashboard</h1>
+            <p class="text-secondary mb-0">Παρακολουθήστε την εξέλιξη των παραγγελιών.</p>
+        </div>
+
+        <div class="d-flex gap-2">
+            <div th:if="${#authorization.expression('hasRole(''OWNER'')')}">
+                <a th:if="${currentFilter == 'active'}"
+                   href="/orders"
+                   class="btn btn-outline-secondary shadow-sm">
+                    Show All Orders
+                </a>
+                <a th:if="${currentFilter != 'active'}"
+                   href="/orders?status=active"
+                   class="btn btn-outline-primary shadow-sm">
+                    <i class="bi bi-filter"></i> Active Only
+                </a>
+            </div>
+
+            <a th:if="${me.type.name() == 'USER'}" th:href="@{/showstores}" class="btn btn-primary shadow-sm">
+                + New Order
+            </a>
+        </div>
+    </div>
 </header>
 
 <section layout:fragment="main">
+    <div class="card overflow-hidden"
+         id="orders-container"
+         hx-get="/orders"
+         th:attr="hx-get=${currentFilter == 'active' ? '/orders?status=active' : '/orders'}"
+         hx-trigger="every 5s"
+         hx-select="#orders-container">
 
-    <div class="mb-4">
-        <a th:href="@{/profile}" th:text="'Logged in as: ' + ${me.emailAddress()} + ' (' + ${me.type()} + ')'"></a>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                <tr>
+                    <th class="ps-4">ID</th>
+                    <th>Status</th>
+                    <th>Client</th>
+                    <th>Store</th>
+                    <th>Date</th>
+                    <th class="text-end pe-4">Action</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="o : ${orders}">
+                    <td class="ps-4 fw-bold" th:text="'#' + ${o.id()}"></td>
+                    <td>
+                            <span th:class="'badge rounded-pill px-3 py-2 ' +
+                                (${o.status().name() == 'COMPLETED'} ? 'text-bg-success' :
+                                (${o.status().name() == 'DENIED'} ? 'text-bg-danger' :
+                                (${o.status().name() == 'SENT_AT'} ? 'text-bg-primary' : 'text-bg-warning')))"
+                                  th:text="${o.status()}">
+                            </span>
+                    </td>
+                    <td th:text="${o.client().fullName()}"></td>
+                    <td>
+                        <span class="fw-semibold" th:text="${o.store().storeName()}"></span>
+                    </td>
+                    <td class="text-secondary small">
+                        <div class="fw-bold text-dark" th:text="${#temporals.format(o.creatingDate().atZone(T(java.time.ZoneId).of('Europe/Athens')), 'HH:mm')}"></div>
+                        <div style="font-size: 0.75rem;" th:text="${#temporals.format(o.creatingDate().atZone(T(java.time.ZoneId).of('Europe/Athens')), 'dd MMM yyyy')}"></div>
+                    </td>
+                    <td class="text-end pe-4">
+                        <a th:href="@{|/orders/${o.id()}|}" class="btn btn-outline-dark btn-sm rounded-pill px-3">View Details</a>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(orders)}">
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        Δεν βρέθηκαν παραγγελίες.
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
-
-    <table class="table mb-4">
-        <thead>
-        <tr>
-            <th>ID</th>
-            <th>Status</th>
-            <th>Student</th>
-            <th>Store</th>
-            <th>Queued</th>
-
-
-            <!--
-            <th>Actions</th>
-            -->
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="o : ${orders}">
-            <td>
-                <a th:href="@{|/orders/${o.id()}|}" th:text="${o.id()}"></a>
-            </td>
-            <td th:text="${o.status()}"></td>
-            <td th:text="${o.client().fullName()}"></td>
-            <td th:text="${o.store().storeName()}"></td>
-            <td th:text="${o.creatingDate()}"></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div th:if="${me.type().name() == 'USER'}">
-        <a th:href="@{/showstores}">Create new order</a>
-    </div>
-
 </section>
 
 </body>

@@ -1,84 +1,164 @@
 <!DOCTYPE html>
-<html
-    xmlns:th="https://www.thymeleaf.org"
-    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="~{base}">
-
-<head>
-    <title>Order</title>
-</head>
-
+<html xmlns:th="https://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{base}">
+<head><title>Order Details</title></head>
 <body>
 
 <header layout:fragment="header">
-    <p>
-        <a th:href="@{/orders}">Back to list</a>
-    </p>
-    <h1>Order</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a th:href="@{/orders}" class="text-decoration-none">Orders</a></li>
+            <li class="breadcrumb-item active" th:text="'Order #' + ${order.id()}"></li>
+        </ol>
+    </nav>
+    <h1 class="fw-bold">Order Details</h1>
 </header>
 
-<section layout:fragment="main">
+<section layout:fragment="main"
+         id="order-details-container"
+         hx-get=""
+         hx-trigger="every 5s"
+         hx-select="#order-details-container">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-4">Items Summary</h5>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="text-muted small text-uppercase">
+                            <tr>
+                                <th>#</th>
+                                <th>Description</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="desc, iterStat : ${order.orderItemDescriptions()}">
+                                <td th:text="${iterStat.index + 1}"></td>
+                                <td class="fw-semibold" th:text="${desc}"></td>
+                                <td class="text-center" th:text="${order.orderItemQuantities()[iterStat.index]}"></td>
+                                <td class="text-end fw-bold text-success" th:text="'€' + ${order.orderItemPrices()[iterStat.index]}"></td>
+                            </tr>
+                            </tbody>
+                            <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold h5 pt-4">Total Amount:</td>
+                                <td class="text-end text-success fw-extrabold h5 pt-4" th:text="'€' + ${order.totalPrice()}"></td>
+                            </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
 
-    <div class="mb-4">
-        <a th:href="@{/profile}" th:text="'Logged in as: ' + ${me.emailAddress()} + ' (' + ${me.type()} + ')'"></a>
-        <a th:if="${#authorization.expression('hasRole(''USER'')')}" th:href="@{'/orders/' + ${order.id} + '/changeorder'}" th:text="'Change my order'"></a>
+            <div th:if="${#authorization.expression('hasRole(''OWNER'')') and order.status().name() == 'SENT_AT'}" class="card border-warning bg-light">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1">Pending Action</h6>
+                        <p class="mb-0 small text-secondary">Αποδεχτείτε ή απορρίψτε την παραγγελία.</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <form th:action="@{|/orders/${order.id()}/deny|}" method="post">
+                            <button type="submit" class="btn btn-outline-danger px-4 rounded-pill">Deny</button>
+                        </form>
+                        <form th:action="@{|/orders/${order.id()}/start|}" method="post">
+                            <button type="submit" class="btn btn-success px-4 rounded-pill shadow-sm">Accept & Start</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
+            <div th:if="${#authorization.expression('hasRole(''OWNER'')') and order.status().name() == 'IN_PROCESS'}"
+                 class="card border-success bg-light mt-3">
+                <div class="card-body d-flex align-items-center justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-1 text-success">Σε εξέλιξη</h6>
+                        <p class="mb-0 small text-secondary">Η παραγγελία ετοιμάζεται. Πατήστε ολοκλήρωση όταν είναι έτοιμη.</p>
+                    </div>
+                    <div>
+                        <form th:action="@{|/orders/${order.id()}/complete|}" method="post">
+                            <button type="submit" class="btn btn-primary px-4 rounded-pill shadow-sm">
+                                Mark as Completed
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card p-4 mb-4 bg-white shadow-sm border-0">
+                <h5 class="fw-bold mb-3">Order Status</h5>
+                <div class="d-flex align-items-center mb-4">
+                    <div th:if="${order.status().name() == 'IN_PROCESS'}" class="spinner-grow text-warning spinner-grow-sm me-2" role="status"></div>
+                    <h4 class="mb-0 fw-bold text-danger" th:text="${order.status()}"></h4>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Store</div>
+                    <div class="fw-bold" th:text="${order.store().storeName()}">Κατάστημα</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Client</div>
+                    <div th:text="${order.client().fullName()}">Όνομα Πελάτη</div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small text-muted text-uppercase fw-semibold" style="font-size: 0.7rem;">Ordered at</div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-dark" th:text="${#temporals.format(order.creatingDate().atZone(T(java.time.ZoneId).of('Europe/Athens')), 'HH:mm')}"></span>
+                        <span class="text-secondary small border-start ps-2" th:text="${#temporals.format(order.creatingDate().atZone(T(java.time.ZoneId).of('Europe/Athens')), 'dd MMM yyyy')}"></span>
+                    </div>
+                </div>
+
+                <div th:if="${#authorization.expression('hasRole(''USER'')')
+                     and (order.status().name() == 'COMPLETED' or order.status().name() == 'DENIED')
+                     and order.visibleUntil() != null}"
+                     class="alert alert-light border-0 p-3 mb-0" style="background-color: #f8f9fa; border-left: 4px solid #ffc107 !important;">
+                    <div class="d-flex align-items-center">
+                        <div class="me-3 fs-4">⏳</div>
+                        <div>
+                            <div class="small text-muted fw-semibold" style="font-size: 0.65rem; text-transform: uppercase;">Ορατό στο ιστορικό έως:</div>
+                            <div class="fw-bold text-dark">
+                                <span th:text="${#temporals.format(order.visibleUntil().atZone(T(java.time.ZoneId).of('Europe/Athens')), 'HH:mm')}"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="small fw-bold text-uppercase text-muted" style="font-size: 0.65rem;">Order Type</div>
+                    <span class="badge bg-light text-dark border px-3 py-2 rounded-pill" th:text="${order.type()}"></span>
+                </div>
+            </div>
+
+            <div th:if="${order.type().name() == 'DELIVERY'}" class="card p-4 bg-dark text-white shadow-sm border-0 mb-4">
+                <h6 class="fw-bold text-uppercase small opacity-75 mb-3">📍 Delivery Info</h6>
+
+                <div th:if="${routeInfo != null}">
+                    <div class="display-6 fw-bold mb-1" th:text="${routeInfo.durationMinutes()} + ' min'"></div>
+                    <p class="small mb-0 opacity-75">Εκτιμώμενος χρόνος διαδρομής</p>
+                </div>
+
+                <div th:if="${routeInfo == null && order.status().name() == 'IN_PROCESS'}" class="text-warning small d-flex align-items-center">
+                    <div class="spinner-border spinner-border-sm me-2" role="status"></div>
+                    Υπολογισμός διαδρομής...
+                </div>
+
+                <div th:if="${routeInfo == null && order.status().name() != 'IN_PROCESS'}" class="text-muted small">
+                    Δεν υπάρχουν διαθέσιμα δεδομένα διαδρομής.
+                </div>
+            </div>
+
+            <a th:if="${#authorization.expression('hasRole(''USER'')') and order.status().name() == 'SENT_AT'}"
+               th:href="@{'/orders/' + ${order.id()} + '/changeorder'}"
+               class="btn btn-outline-danger w-100 rounded-pill">
+                Change My Order
+            </a>
+        </div>
     </div>
-
-    <ul class="mb-4">
-        <li>Status: <b th:text="${order.status()}"></b></li>
-        <li>User: <b th:text="${order.client().fullName()}"></b></li>
-        <li>Store Name: <b th:text="${order.store().storeName()}"></b></li>
-        <li>Queued at: <b th:text="${order.creatingDate()}"></b></li>
-
-        <li th:if="${order.inProgressAt() != null}">In progress at: <b th:text="${order.inProgressAt()}"></b></li>
-        <li th:if="${order.visibleUntil() != null}">Visible until: <b th:text="${order.visibleUntil()}"></b></li>
-        <li th:if="${order.completedAt() != null}">Completed at: <b th:text="${order.completedAt()}"></b></li>
-
-        <li>Order Type: <b th:text="${order.type()}"></b></li>
-        <li>Order DETAILS</li>
-        <table>
-            <thead>
-            <tr>
-                <th>#</th>
-                <th>Description</th>
-                <th>Quantity</th>
-                <th>Price (€)</th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="desc, iterStat : ${order.orderItemDescriptions()}">
-                <td th:text="${iterStat.index + 1}">1</td>
-                <td th:text="${desc}">Description</td>
-                <td th:text="${order.orderItemQuantities()[iterStat.index]}">Qty</td>
-                <td th:text="${order.orderItemPrices()[iterStat.index]}">Price</td>
-            </tr>
-            </tbody>
-        </table>
-        <li>Total Price (€): <b th:text="${order.totalPrice()}"></b></li>
-    </ul>
-    <li th:if="${routeInfo != null}">
-        Estimated route duration:
-        <b th:text="${routeInfo.durationMinutes()}"></b> minutes
-    </li>
-    <li th:if="${routeInfo == null && order.status().name() == 'IN_PROCESS' && order.type().name() == 'DELIVERY'}">
-        Could not find estimated route duration!
-    </li>
-
-    <!-- Store actions -->
-    <div th:if="${#authorization.expression('hasRole(''OWNER'')')}"
-        style="display: flex; gap: 10px;">
-
-        <!-- IN_PROGRESS / start -->
-        <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/orders/${order.id()}/start|}" method="post">
-            <button type="submit" class="btn btn-primary">Start</button>
-        </form>
-        <form th:if="${order.status().name() == 'SENT_AT'}" th:action="@{|/orders/${order.id()}/deny|}" method="post">
-            <button type="submit" class="btn btn-primary">Deny</button>
-        </form>
-
-    </div>
-
 </section>
 
 </body>

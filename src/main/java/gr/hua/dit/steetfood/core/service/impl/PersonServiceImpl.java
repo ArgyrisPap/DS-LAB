@@ -219,14 +219,16 @@ public class PersonServiceImpl implements PersonService {
         Person person = personRepository.findById(personId)
             .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
-        String formattedAddress = String.join("+", person.getRawAddress().trim().split("\\s+"));
-
+        //String formattedAddress = String.join("+", person.getRawAddress().trim().split("\\s+"));
+        String formattedAddress = person.getRawAddress();
         AddressResult addressResult = this.addressPort.findAdress(formattedAddress).orElse(null);
         if (addressResult==null){
             return new PersonProfileDTO(person,null,null);
         }
         LOGGER.info("EKTELESTHKE TO GETPROFILEDATA");
-        String mapUrl = this.addressPort.getStaticMap(addressResult.lat(),addressResult.lon());
+        Double lat = Double.parseDouble(addressResult.lat());
+        Double lon = Double.parseDouble(addressResult.lon());
+        String mapUrl = this.addressPort.getStaticMap(lat,lon);
         return new PersonProfileDTO(person, addressResult,mapUrl);
     }
 

@@ -20,6 +20,8 @@ public interface OrderService {
 
     List <OrderView> getOrders ();
 
+    List <OrderView> filterOrders ();
+
     Optional<OrderView> getOrder (Long orderId);
 
     Long changeOrder (Long orderId);
@@ -27,6 +29,8 @@ public interface OrderService {
     OrderView startOrder (StartOrderRequest startOrderRequest);
 
     OrderView denyOrder (StartOrderRequest startOrderRequest);
+
+    OrderView completeOrder (StartOrderRequest startOrderRequest);
 
     Optional <RouteInfo> findOrderRouteInfo (Long orderId);
 }

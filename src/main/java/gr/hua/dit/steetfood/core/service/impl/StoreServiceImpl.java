@@ -123,7 +123,9 @@ public class StoreServiceImpl implements StoreService {
         final Store store = this.getStoreById(storeId).orElse(null);
         if (store == null) throw new ResponseStatusException
             (HttpStatusCode.valueOf(404), "Store (inside getfoodlist) not found");
-        return store.getFoodItemList();
+        List <FoodItem> items = store.getFoodItemList();
+        return items == null ? List.of() : List.copyOf(items);
+
         //return List.copyOf(store.getFoodItemList());   ISWS EINAI KALUTERO
     }
     @Override

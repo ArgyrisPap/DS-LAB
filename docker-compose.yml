@@ -5,7 +5,8 @@ services:
     env_file: .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
+    networks:
+      - cloudflare-net
   app:
     build: .
     container_name: streetfood-app
@@ -18,7 +19,8 @@ services:
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
       APP_EMAIL_ENABLED: ${APP_EMAIL_ENABLED:-false}
-
+    networks:
+      - cloudflare-net
   nginx:
     image: nginx:stable-alpine
     container_name: streetfood-proxy
@@ -30,16 +32,22 @@ services:
       - "host.docker.internal:host-gateway" #το NOC,δηλαδη μεσα στο .env NOC_BASE_URL=http://host.docker.internal:8081
     depends_on:
       - app
-
-  tunnel:
-    image: cloudflare/cloudflared:latest
-    container_name: cloudflare-tunnel
-    restart: always
-    environment:
-      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
-    command: tunnel --no-autoupdate run
-    depends_on:
-      - nginx
+    networks:
+      - cloudflare-net
+  #  tunnel:
+  #   image: cloudflare/cloudflared:latest
+  #  container_name: cloudflare-tunnel
+  #  restart: always
+  #  environment:
+  #    - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL_TOKEN}
+  #  command: tunnel --no-autoupdate run
+  #  extra_hosts:
+  #    - "host.docker.internal:host-gateway"
+  #  depends_on:
+  #    - nginx
 
 volumes:
   postgres_data:
+networks:
+  cloudflare-net:
+    external: true

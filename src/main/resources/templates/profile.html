@@ -6,46 +6,128 @@
 
 <head>
     <title>Profile</title>
+    <style>
+        /* Custom Styles για βάθος και χρώμα */
+        .profile-card {
+            border: none;
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .icon-box {
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            margin-right: 15px;
+        }
+        .list-group-item {
+            border: none;
+            padding: 1rem 1.25rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+        }
+        .list-group-item:hover {
+            background-color: #fff5f5; /* Απαλό κόκκινο hover */
+            transform: translateX(5px);
+            color: #dc3545;
+        }
+        .map-container {
+            border: 5px solid white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .map-container:hover {
+            transform: scale(1.01);
+        }
+        .badge-user { background: #e7f3ff; color: #007bff; }
+        .badge-owner { background: #fff4e6; color: #fd7e14; }
+        .badge-admin { background: #f3f0ff; color: #7950f2; }
+    </style>
 </head>
 
 <body>
 
-<header layout:fragment="header">
-    <h1>Street Food GO <small>/ Profile</small></h1>
+<header layout:fragment="header" class="text-start py-4">
+    <h1 class="fw-extrabold display-6 mb-1 text-dark">My Account</h1>
+    <p class="text-muted">Διαχειρίσου τις ρυθμίσεις και δες την τοποθεσία σου.</p>
 </header>
 
 <section layout:fragment="main">
 
-    <div>
-        <ul>
-            <li>Email <span th:text="${me.emailAddress()}"></span></li>
-            <li>Type <span  th:text="${me.type()}"></span></li>
-        </ul>
+    <div class="card profile-card rounded-4 p-4 mb-4">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center">
+                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
+                     style="width: 60px; height: 60px; font-size: 1.5rem;"
+                     th:text="${me.emailAddress().substring(0,1).toUpperCase()}">
+                </div>
+                <div class="ms-3">
+                    <h5 class="mb-0 fw-bold" th:text="${me.emailAddress()}">email@example.com</h5>
+                    <small class="text-secondary">Μέλος από: <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy')}">2024</span></small>
+                </div>
+            </div>
+            <span th:class="'badge rounded-pill px-4 py-2 border ' +
+                            (${me.type.name() == 'OWNER'} ? 'badge-owner' :
+                            (${me.type.name() == 'ADMIN'} ? 'badge-admin' : 'badge-user'))"
+                  th:text="${me.type()}">ROLE</span>
+        </div>
+    </div>
 
-        <hr>
+    <div class="row g-4">
+        <div class="col-12 col-lg-5">
+            <h5 class="fw-bold mb-3 px-2">Επιλογές</h5>
+            <div class="list-group rounded-4 shadow-sm border">
+                <a th:href="@{/profile}" class="list-group-item list-group-item-action border-bottom">
+                    <div class="icon-box bg-light text-primary"><i class="bi bi-person"></i>👤</div>
+                    <span>Προφίλ</span>
+                </a>
+                <a th:if="${me.type.name() != 'ADMIN'}" th:href="@{/orders}" class="list-group-item list-group-item-action border-bottom">
+                    <div class="icon-box bg-light text-success"><i class="bi bi-bag"></i>🛍️</div>
+                    <span>Οι Παραγγελίες μου</span>
+                </a>
+                <a th:if="${me.type.name() == 'OWNER'}" th:href="@{/profile/mystores}" class="list-group-item list-group-item-action border-bottom">
+                    <div class="icon-box bg-light text-warning"><i class="bi bi-shop"></i>🏪</div>
+                    <span>Τα Καταστήματά μου</span>
+                </a>
+                <a th:if="${me.type.name() == 'ADMIN'}" th:href="@{/addstore}" class="list-group-item list-group-item-action border-bottom">
+                    <div class="icon-box bg-light text-info"><i class="bi bi-plus-circle"></i>➕</div>
+                    <span>Προσθήκη Καταστήματος</span>
+                </a>
+                <a th:href="@{/logout}" class="list-group-item list-group-item-action text-danger">
+                    <div class="icon-box bg-light text-danger"><i class="bi bi-box-arrow-right"></i>🚪</div>
+                    <span class="fw-bold">Αποσύνδεση</span>
+                </a>
+            </div>
+        </div>
 
-        <ul>
-            <li>
-                <a th:href="@{/profile}">Profile</a>
-            </li>
-            <li th:if="${me.type.name() != 'ADMIN'}">
-                <a th:href="@{/orders}">My Orders</a>
-            </li>
-            <li>
-                <a th:href="@{/logout}">Logout</a>
-            </li>
-            <li th:if="${me.type.name() == 'OWNER'}">
-                <a th:href="@{/profile/mystores}">My Stores</a>
-            </li>
-            <li th:if="${me.type.name() == 'ADMIN'}">
-                <a th:href="@{/addstore}">Add Store</a>
-            </li>
+        <div class="col-12 col-lg-7">
+            <div th:if="${profile?.mapUrl() != null}" class="card border-0 rounded-4 shadow-sm h-100 overflow-hidden">
+                <div class="card-header bg-white py-3 border-0">
+                    <h5 class="fw-bold mb-0">📍 Τοποθεσία Παράδοσης</h5>
+                </div>
+                <div class="card-body pt-0">
+                    <div class="alert alert-light border-0 mb-3 small py-2">
+                        <i class="bi bi-geo-alt me-1"></i>
+                        <span th:text="${profile.person().getRawAddress()}">Διεύθυνση</span>
+                    </div>
+                    <div class="map-container rounded-3">
+                        <img th:src="${profile.mapUrl()}" alt="User Location" class="img-fluid w-100" style="min-height: 250px; object-fit: cover;"/>
+                    </div>
+                    <div class="mt-3 text-center">
+                        <small class="text-muted italic">Η τοποθεσία υπολογίζεται αυτόματα από τη διεύθυνσή σας.</small>
+                    </div>
+                </div>
+            </div>
 
-        </ul>
-        <div th:if="${profile?.mapUrl() != null}">
-            <h3>My Location</h3>
-            <li>Address Given: <span th:text="${profile.person().getRawAddress()}"></span></li>
-            <img th:src="${profile.mapUrl()}" alt="User Location"/>
+            <div th:unless="${profile?.mapUrl() != null}" class="card border-0 rounded-4 shadow-sm h-100 d-flex align-items-center justify-content-center p-5 text-center bg-light">
+                <div>
+                    <div class="display-1 text-muted opacity-25 mb-3">📍</div>
+                    <p class="text-secondary">Δεν βρέθηκαν δεδομένα τοποθεσίας για αυτό το προφίλ.</p>
+                </div>
+            </div>
         </div>
     </div>
 

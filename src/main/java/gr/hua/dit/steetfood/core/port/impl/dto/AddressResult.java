@@ -1,8 +1,15 @@
 package gr.hua.dit.steetfood.core.port.impl.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public record AddressResult(
-    Double lon,
-    Double lat,
-    String display_name //To match the result of the API output
-) {
-}
+
+    @JsonProperty("lon")
+    String lon,
+
+    @JsonProperty("lat")
+    String lat,
+
+    @JsonProperty("display_name")
+    String displayName
+) {}
